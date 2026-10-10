@@ -1,0 +1,23 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "pet.c"
+        "wifi_manager.c"
+        "web_server.c"
+        "button.c"
+    INCLUDE_DIRS
+        "."
+    EMBED_FILES
+        "web/index.html"
+    REQUIRES
+        nvs_flash
+        esp_wifi
+        esp_netif
+        esp_event
+        esp_timer
+        driver
+        esp_http_server
+        json
+        esp_common
+        freertos
+)

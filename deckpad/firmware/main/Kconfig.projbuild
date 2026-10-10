@@ -1,0 +1,40 @@
+menu "DeckPad Configuration"
+
+    config DECKPAD_DEVICE_NAME
+        string "BLE device name"
+        default "DeckPad"
+
+    config DECKPAD_WIFI_SSID
+        string "WiFi SSID (for web config)"
+        default "your-ssid"
+
+    config DECKPAD_WIFI_PASSWORD
+        string "WiFi Password"
+        default "your-password"
+
+    config DECKPAD_NUM_BUTTONS
+        int "Number of buttons"
+        range 1 8
+        default 4
+
+    config DECKPAD_BTN0_GPIO
+        int "Button 0 GPIO"
+        default 0
+
+    config DECKPAD_BTN1_GPIO
+        int "Button 1 GPIO"
+        default 4
+
+    config DECKPAD_BTN2_GPIO
+        int "Button 2 GPIO"
+        default 16
+
+    config DECKPAD_BTN3_GPIO
+        int "Button 3 GPIO"
+        default 17
+
+    config DECKPAD_LED_GPIO
+        int "Status LED GPIO"
+        default 2
+
+endmenu

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeckPad · BLE 宏键盘</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#121a30; --line:#243052;
+    --text:#e8eefc; --muted:#8fa3c8;
+    --ok:#2ee6a8; --accent:#5b8cff; --accent2:#9b5bff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);
+    font:14px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,"PingFang SC","Microsoft YaHei";}
+  .wrap{max-width:1000px;margin:0 auto;padding:20px}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .logo{width:46px;height:46px;border-radius:14px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:grid;place-items:center;font-size:22px}
+  h1{margin:0;font-size:22px}
+  .sub{color:var(--muted);font-size:12px}
+  .badge{margin-left:auto;display:flex;gap:8px}
+  .pill{padding:5px 11px;border-radius:999px;font-size:12px;background:#1a2440;border:1px solid var(--line);color:var(--muted)}
+  .pill.on{color:var(--ok);border-color:#2ee6a855;background:#2ee6a812}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
+  .card h2{margin:0 0 12px;font-size:12px;color:var(--muted);letter-spacing:.9px;text-transform:uppercase}
+
+  .keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+  .key{background:linear-gradient(160deg,#182342,#101a34);border:1px solid var(--line);
+    border-radius:16px;padding:18px 14px;cursor:pointer;transition:all .15s;user-select:none}
+  .key:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 10px 30px #5b8cff33}
+  .key:active{transform:scale(.97)}
+  .key .name{font-size:16px;font-weight:700}
+  .key .meta{color:var(--muted);font-size:11px;margin-top:6px;font-family:ui-monospace,monospace}
+
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  input,select{background:#0e1530;border:1px solid var(--line);color:var(--text);
+    padding:10px 12px;border-radius:10px;outline:none;flex:1;min-width:120px}
+  button{appearance:none;border:1px solid var(--line);background:#16203a;color:var(--text);
+    padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+  button:hover{border-color:var(--accent)}
+  button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff}
+
+  .note{color:var(--muted);font-size:12px;margin-top:10px;line-height:1.7}
+  .editor{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .editor label{font-size:11px;color:var(--muted)}
+  @media (max-width:700px){.editor{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🎛️</div>
+    <div>
+      <h1>DeckPad</h1>
+      <div class="sub">BLE HID 宏键盘 · 直播/剪辑/效率神器</div>
+    </div>
+    <div class="badge">
+      <span id="layer" class="pill">L0</span>
+      <span id="conn" class="pill">checking…</span>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2>按键面板 · 点击即触发</h2>
+    <div class="keys" id="keys"></div>
+    <div class="note">
+      通过 <b>BLE</b> 配对电脑/手机后，这里点击等同于按下物理按键。
+      物理按键（GPIO）同样触发对应宏。
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>编辑宏</h2>
+    <div class="editor">
+      <div>
+        <label>槽位</label>
+        <select id="editIdx"><option>0</option><option>1</option><option>2</option><option>3</option></select>
+      </div>
+      <div>
+        <label>名称</label>
+        <input id="editName" type="text" placeholder="Mute Mic">
+      </div>
+      <div>
+        <label>修饰键（位掩码 1=Ctrl 2=Shift 4=Alt）</label>
+        <input id="editMod" type="number" value="0">
+      </div>
+      <div>
+        <label>按键码（十进制，逗号分隔）</label>
+        <input id="editKeys" type="text" placeholder="16">
+      </div>
+      <div style="grid-column:1/-1">
+        <label>或者发送文本</label>
+        <input id="editText" type="text" placeholder="Hello from DeckPad!">
+      </div>
+      <div style="grid-column:1/-1">
+        <label>或者多媒体键（Consumer）</label>
+        <select id="editMedia">
+          <option value="0">无</option>
+          <option value="205">播放/暂停 (0xCD)</option>
+          <option value="181">上一曲 (0xB6)</option>
+          <option value="182">下一曲 (0xB5)</option>
+          <option value="226">静音 (0xE2)</option>
+          <option value="233">音量+ (0xE9)</option>
+          <option value="234">音量- (0xEA)</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <button class="primary" id="btnSave">保存到 NVS</button>
+      <button id="btnTest">测试触发</button>
+      <button id="btnReload">重新加载</button>
+    </div>
+    <div class="note">
+      常用键码：<code>4=a … 29=z</code>，<code>30-39=1-0</code>，<code>44=Space</code>，<code>40=Enter</code><br>
+      修饰键：<code>1=Ctrl</code> · <code>2=Shift</code> · <code>4=Alt</code> · 组合用按位或<br>
+      <b>多层：</b>物理按键 0 <b>长按</b> 切换层（L0 流程 / L1 音量 / L2 切歌）。也可在此切换。
+      <button id="btnNextLayer" style="margin-left:8px">切换层</button>
+    </div>
+  </section>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let macros = [];
+let curLayer = 0;
+
+const MEDIA_NAMES = {0:'—',205:'⏵ 播放/暂停',181:'⏮ 上一曲',182:'⏭ 下一曲',226:'🔇 静音',233:'🔊 音量+',234:'🔉 音量-'};
+
+function renderKeys(){
+  const el = $('keys');
+  el.innerHTML = '';
+  macros.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'key';
+    let meta;
+    if(m.consumer) meta = MEDIA_NAMES[m.consumer] || ('MEDIA 0x'+m.consumer.toString(16));
+    else if(m.text) meta = 'TEXT: ' + m.text.slice(0,24);
+    else meta = 'MOD ' + m.modifier + '  KEY [' + (m.keys||[]).join(',') + ']';
+    div.innerHTML = `<div class="name">${m.idx}: ${m.name}</div><div class="meta">${meta}</div>`;
+    div.onclick = async () => {
+      await fetch('/api/run', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({idx:m.idx})
+      });
+    };
+    el.appendChild(div);
+  });
+}
+
+async function load(){
+  const r = await fetch('/api/macros');
+  const d = await r.json();
+  macros = d.macros || [];
+  curLayer = d.layer || 0;
+  $('layer').textContent = 'L' + curLayer;
+  $('conn').textContent = d.connected ? 'BLE 已连接' : 'BLE 未连接';
+  $('conn').className = 'pill ' + (d.connected ? 'on' : '');
+  renderKeys();
+}
+
+function loadEditor(){
+  const idx = parseInt($('editIdx').value, 10) || 0;
+  const m = macros[idx];
+  if(!m) return;
+  $('editName').value = m.name || '';
+  $('editMod').value = m.modifier || 0;
+  $('editKeys').value = (m.keys||[]).join(',');
+  $('editText').value = m.text || '';
+  $('editMedia').value = String(m.consumer || 0);
+}
+
+$('editIdx').onchange = loadEditor;
+$('btnReload').onclick = async ()=>{ await load(); loadEditor(); };
+$('btnNextLayer').onclick = async ()=>{
+  const next = (curLayer + 1) % 3;
+  await fetch('/api/layer', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({layer: next})
+  });
+  await load(); loadEditor();
+};
+$('btnSave').onclick = async ()=>{
+  const idx = parseInt($('editIdx').value, 10) || 0;
+  const keys = $('editKeys').value.split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!isNaN(n));
+  await fetch('/api/set', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      idx,
+      name: $('editName').value,
+      modifier: parseInt($('editMod').value,10)||0,
+      keys,
+      text: $('editText').value,
+      consumer: parseInt($('editMedia').value,10)||0
+    })
+  });
+  await load();
+};
+$('btnTest').onclick = async ()=>{
+  const idx = parseInt($('editIdx').value, 10) || 0;
+  await fetch('/api/run', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({idx})
+  });
+};
+
+load();
+setInterval(load, 5000);
+</script>
+</body>
+</html>

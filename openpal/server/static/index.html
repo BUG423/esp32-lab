@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenPal · 开源 AI 语音搭子</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#121a30; --line:#243052;
+    --text:#e8eefc; --muted:#8fa3c8;
+    --ok:#2ee6a8; --warn:#ffc857; --bad:#ff6b8a;
+    --accent:#5b8cff; --accent2:#9b5bff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);
+    font:14px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,"PingFang SC","Microsoft YaHei";}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .logo{width:46px;height:46px;border-radius:14px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:grid;place-items:center;font-size:24px;box-shadow:0 10px 30px #5b8cff44}
+  h1{margin:0;font-size:22px}
+  .sub{color:var(--muted);font-size:12px}
+  .badge{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .pill{padding:5px 11px;border-radius:999px;font-size:12px;background:#1a2440;border:1px solid var(--line);color:var(--muted)}
+  .pill.on{color:var(--ok);border-color:#2ee6a855;background:#2ee6a812}
+  .pill.off{color:var(--bad);border-color:#ff6b8a55;background:#ff6b8a12}
+
+  .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card h2{margin:0 0 12px;font-size:12px;color:var(--muted);letter-spacing:.9px;text-transform:uppercase}
+
+  .orb{width:160px;height:160px;border-radius:50%;margin:8px auto 16px;position:relative;
+    background:radial-gradient(circle at 35% 30%, #234, #0b1020 70%);
+    border:1px solid var(--line);display:grid;place-items:center;cursor:pointer;user-select:none}
+  .orb .core{width:92px;height:92px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #3a4b7a, #1a2440 70%);
+    transition:all .35s ease;display:grid;place-items:center;font-size:34px}
+  .orb.live .core{box-shadow:0 0 50px var(--glow,#2ee6a8);transform:scale(1.05)}
+  .orb.listening .core{box-shadow:0 0 42px #2ee6a8aa}
+  .orb.thinking .core{box-shadow:0 0 42px #b388ffaa;animation:pulse 1.2s ease-in-out infinite}
+  .orb.speaking .core{box-shadow:0 0 42px #5b8cffaa;animation:pulse 0.8s ease-in-out infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+
+  .state{text-align:center;font-size:20px;font-weight:800;letter-spacing:.4px}
+  .emotion{text-align:center;color:var(--muted);margin-bottom:10px}
+
+  .chat{height:340px;overflow:auto;background:#0a1024;border:1px solid var(--line);
+    border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .msg{max-width:85%;padding:10px 12px;border-radius:12px;white-space:pre-wrap;word-break:break-word}
+  .msg.user{align-self:flex-end;background:#1a2a55;border:1px solid #2a3a6a}
+  .msg.bot{align-self:flex-start;background:#152038;border:1px solid var(--line)}
+  .msg .who{font-size:11px;color:var(--muted);margin-bottom:4px}
+
+  .row{display:flex;gap:8px;margin-top:12px}
+  input[type=text]{flex:1;background:#0e1530;border:1px solid var(--line);color:var(--text);
+    padding:11px 12px;border-radius:10px;outline:none}
+  input[type=text]:focus{border-color:var(--accent)}
+  button{appearance:none;border:1px solid var(--line);background:#16203a;color:var(--text);
+    padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+  button:hover{border-color:var(--accent);background:#1a2a52}
+  button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff}
+  button.danger{background:#3a1525;border-color:#ff6b8a55;color:#ff8fa8}
+  button:disabled{opacity:.5;cursor:not-allowed}
+
+  .statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+  .stat{background:#0e1530;border:1px solid var(--line);border-radius:12px;padding:10px}
+  .stat .k{color:var(--muted);font-size:11px}
+  .stat .v{font-size:18px;font-weight:700}
+
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:13px;margin-top:6px}
+  .kv .k{color:var(--muted)}
+  .note{color:var(--muted);font-size:12px;margin-top:10px;line-height:1.6}
+
+  .wave{height:48px;display:flex;align-items:center;justify-content:center;gap:3px;margin:8px 0}
+  .wave i{width:4px;height:12px;background:var(--accent);border-radius:3px;opacity:.35;transition:height .1s}
+  .wave.on i{opacity:1;animation:wv 1s ease-in-out infinite}
+  .wave i:nth-child(2n){animation-delay:.15s}
+  .wave i:nth-child(3n){animation-delay:.3s}
+  .wave i:nth-child(4n){animation-delay:.45s}
+  @keyframes wv{0%,100%{height:8px}50%{height:28px}}
+
+  @media (max-width:880px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">帕</div>
+    <div>
+      <h1>OpenPal</h1>
+      <div class="sub">本地优先的 AI 语音搭子 · 可自托管的小智替代方案</div>
+    </div>
+    <div class="badge">
+      <span id="conn" class="pill off">connecting…</span>
+      <span id="llmPill" class="pill">LLM —</span>
+      <span id="asrPill" class="pill">ASR —</span>
+      <span id="ttsPill" class="pill">TTS —</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <h2>对话</h2>
+      <div class="chat" id="chat"></div>
+      <div class="row">
+        <input id="input" type="text" placeholder="说点什么…（Enter 发送）" autocomplete="off">
+        <button class="primary" id="btnSend">发送</button>
+      </div>
+      <div class="row">
+        <button id="btnMic">🎙️ 按住说话</button>
+        <button id="btnInterrupt">✋ 打断</button>
+        <button class="danger" id="btnClear">清空</button>
+      </div>
+      <div class="wave" id="wave">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      </div>
+      <div class="note">
+        <b>浏览器语音模式：</b>不用买硬件，直接用电脑麦克风体验完整语音闭环。
+        有 ESP32 时，同一协议可接入真机。
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>情绪引擎</h2>
+      <div class="orb live" id="orb" title="点击重置情绪">
+        <div class="core" id="orbEmoji">🙂</div>
+      </div>
+      <div class="state" id="stateText">—</div>
+      <div class="emotion" id="emotionText">neutral</div>
+
+      <div class="statrow">
+        <div class="stat"><div class="k">Valence 愉悦度</div><div class="v" id="valence">0.50</div></div>
+        <div class="stat"><div class="k">Arousal 唤醒度</div><div class="v" id="arousal">0.40</div></div>
+        <div class="stat"><div class="k">在线设备</div><div class="v" id="clients">0</div></div>
+      </div>
+
+      <h2 style="margin-top:18px">服务状态</h2>
+      <div class="kv">
+        <div class="k">LLM</div><div id="kvLlm">—</div>
+        <div class="k">ASR</div><div id="kvAsr">—</div>
+        <div class="k">TTS</div><div id="kvTts">—</div>
+        <div class="k">语音</div><div id="kvVoice">—</div>
+      </div>
+
+      <h2 style="margin-top:18px">快速指令</h2>
+      <div class="row" style="flex-wrap:wrap">
+        <button onclick="say('你好')">你好</button>
+        <button onclick="say('你是谁？')">你是谁</button>
+        <button onclick="say('给我讲个笑话')">讲个笑话</button>
+        <button onclick="say('今天心情怎么样？')">今天心情</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let ws, audioCtx, mediaStream, procNode, playbackCtx;
+let recording = false;
+
+// ---------- UI helpers ----------
+function addMsg(role, text){
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
+  div.innerHTML = `<div class="who">${role === 'user' ? '你' : '小帕'}</div>` +
+    text.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+  $('chat').appendChild(div);
+  $('chat').scrollTop = $('chat').scrollHeight;
+}
+
+function addToolMsg(name, args, result){
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  const brief = JSON.stringify(result ?? {});
+  div.innerHTML = `<div class="who">🔧 工具 · ${name}</div>` +
+    `<code style="font-size:12px;opacity:.85">${name}(${JSON.stringify(args||{})})</code><br>` +
+    brief.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+  $('chat').appendChild(div);
+  $('chat').scrollTop = $('chat').scrollHeight;
+}
+
+function flashLed(color){
+  const orb = $('orb');
+  orb.style.setProperty('--glow', color);
+  orb.classList.add('live');
+  setTimeout(()=>orb.classList.remove('live'), 600);
+}
+
+function setEmotion(e){
+  if(!e) return;
+  $('orbEmoji').textContent = e.emoji || '🙂';
+  $('orb').style.setProperty('--glow', e.color || '#2ee6a8');
+  $('emotionText').textContent = (e.emotion || 'neutral') + ' · ' + (e.emoji || '');
+  $('valence').textContent = (e.valence ?? 0.5).toFixed(2);
+  $('arousal').textContent = (e.arousal ?? 0.4).toFixed(2);
+}
+
+function setState(s){
+  const orb = $('orb');
+  orb.classList.remove('listening','thinking','speaking');
+  const map = {listening:'🎧 倾听中', thinking:'💭 思考中', speaking:'🗣️ 说话中'};
+  $('stateText').textContent = map[s] || s || '—';
+  if(s && map[s]) orb.classList.add(s);
+}
+
+// ---------- WebSocket ----------
+function connect(){
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(proto + '://' + location.host + '/ws');
+  ws.binaryType = 'arraybuffer';
+
+  ws.onopen = () => {
+    $('conn').className = 'pill on';
+    $('conn').textContent = 'live';
+  };
+  ws.onclose = () => {
+    $('conn').className = 'pill off';
+    $('conn').textContent = 'offline';
+    setTimeout(connect, 1500);
+  };
+  ws.onerror = () => ws.close();
+
+  ws.onmessage = ev => {
+    if (ev.data instanceof ArrayBuffer) return;
+    let d; try { d = JSON.parse(ev.data); } catch { return; }
+
+    if(d.type === 'hello'){
+      $('llmPill').textContent = 'LLM ' + (d.llm_ready ? 'ready' : 'demo');
+      $('llmPill').className = 'pill ' + (d.llm_ready ? 'on' : '');
+      $('asrPill').textContent = 'ASR ' + (d.asr_ready ? 'ready' : 'text');
+      $('asrPill').className = 'pill ' + (d.asr_ready ? 'on' : '');
+      $('ttsPill').textContent = 'TTS ' + (d.tts_provider || '—');
+      $('ttsPill').className = 'pill on';
+      setEmotion(d.emotion);
+    }
+    else if(d.type === 'status'){ setState(d.state); setEmotion(d); }
+    else if(d.type === 'emotion'){ setEmotion(d); }
+    else if(d.type === 'transcript'){ addMsg(d.role, d.text); }
+    else if(d.type === 'tool'){
+      addToolMsg(d.name, d.args, d.result);
+    }
+    else if(d.type === 'device_cmd'){
+      if(d.cmd === 'led') flashLed(d.color || '#2ee6a8');
+    }
+    else if(d.type === 'reply'){
+      if(d.audio_b64) playPcm(d.audio_b64, d.sample_rate || 24000);
+      else ws.send(JSON.stringify({type:'playback_done'}));
+    }
+    else if(d.type === 'interrupted'){ stopPlayback(); }
+    else if(d.type === 'pong'){ /* heartbeat */ }
+  };
+}
+
+// ---------- audio playback ----------
+function playPcm(b64, rate){
+  try{
+    const bin = atob(b64);
+    const n = bin.length / 2;
+    const pcm = new Int16Array(n);
+    for(let i=0;i<n;i++){
+      const lo = bin.charCodeAt(i*2), hi = bin.charCodeAt(i*2+1);
+      pcm[i] = (hi << 8) | lo;
+    }
+    playbackCtx = playbackCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const buf = playbackCtx.createBuffer(1, n, rate);
+    const ch = buf.getChannelData(0);
+    for(let i=0;i<n;i++) ch[i] = pcm[i] / 32768;
+    const src = playbackCtx.createBufferSource();
+    src.buffer = buf;
+    src.connect(playbackCtx.destination);
+    src.onended = () => ws.send(JSON.stringify({type:'playback_done'}));
+    src.start();
+  }catch(e){
+    console.warn('play failed', e);
+    ws.send(JSON.stringify({type:'playback_done'}));
+  }
+}
+function stopPlayback(){ if(playbackCtx){ try{ playbackCtx.close(); }catch{} playbackCtx=null; } }
+
+// ---------- microphone capture ----------
+async function startMic(){
+  if(recording) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)({sampleRate:16000});
+  mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
+  const src = audioCtx.createMediaStreamSource(mediaStream);
+  procNode = audioCtx.createScriptProcessor(4096, 1, 1);
+  procNode.onaudioprocess = e => {
+    if(!recording || ws.readyState !== 1) return;
+    const f = e.inputBuffer.getChannelData(0);
+    const pcm = new Int16Array(f.length);
+    for(let i=0;i<f.length;i++){
+      let s = Math.max(-1, Math.min(1, f[i]));
+      pcm[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    }
+    ws.send(pcm.buffer);
+  };
+  src.connect(procNode);
+  procNode.connect(audioCtx.destination); // keep processor alive
+  recording = true;
+  $('btnMic').textContent = '⏹️ 结束并识别';
+  $('wave').classList.add('on');
+  setState('listening');
+}
+
+function stopMic(){
+  if(!recording) return;
+  recording = false;
+  $('btnMic').textContent = '🎙️ 按住说话';
+  $('wave').classList.remove('on');
+  try{ procNode && procNode.disconnect(); mediaStream && mediaStream.getTracks().forEach(t=>t.stop()); audioCtx && audioCtx.close(); }catch{}
+  if(ws.readyState === 1) ws.send(JSON.stringify({type:'audio_end'}));
+}
+
+// ---------- text chat ----------
+function say(text){
+  if(!text.trim()) return;
+  if(ws.readyState === 1) ws.send(JSON.stringify({type:'text', text}));
+}
+
+$('btnSend').onclick = () => { say($('input').value); $('input').value=''; };
+$('input').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ say($('input').value); $('input').value=''; }
+});
+$('btnMic').onclick = () => recording ? stopMic() : startMic();
+$('btnInterrupt').onclick = () => {
+  stopPlayback();
+  if(ws.readyState === 1) ws.send(JSON.stringify({type:'interrupt'}));
+};
+$('btnClear').onclick = () => { $('chat').innerHTML=''; };
+$('orb').onclick = () => {
+  if(ws.readyState === 1) ws.send(JSON.stringify({type:'recalibrate_mood'}));
+};
+
+// ---------- status poll ----------
+async function poll(){
+  try{
+    const r = await fetch('/api/status');
+    const d = await r.json();
+    $('clients').textContent = d.clients ?? 0;
+    $('kvLlm').textContent = d.llm_ready ? d.llm_model : 'toy-brain demo（未配 API Key）';
+    $('kvAsr').textContent = d.asr_provider;
+    $('kvTts').textContent = d.tts_provider;
+  }catch{}
+  setTimeout(poll, 4000);
+}
+
+connect(); poll();
+</script>
+</body>
+</html>

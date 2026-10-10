@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>bassline · audio spectrum</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --bg2: #0f172e;
+    --panel: rgba(22, 32, 58, 0.72);
+    --line: rgba(120, 160, 255, 0.14);
+    --txt: #e8eefc;
+    --muted: #8b9bc4;
+    --cyan: #37e0ff;
+    --violet: #a78bfa;
+    --pink: #ff5d8f;
+    --lime: #7dffb3;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(55, 224, 255, 0.12), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(167, 139, 250, 0.12), transparent 55%),
+      radial-gradient(800px 800px at 50% 120%, rgba(255, 93, 143, 0.08), transparent 60%),
+      var(--bg);
+    color: var(--txt);
+    font-family: "SF Pro Display", "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    overflow-x: hidden;
+    min-height: 100%;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 22px;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo {
+    width: 46px; height: 46px; border-radius: 14px;
+    background: conic-gradient(from 210deg, #37e0ff, #a78bfa, #ff5d8f, #7dffb3, #37e0ff);
+    box-shadow: 0 0 28px rgba(55, 224, 255, 0.45), inset 0 0 12px rgba(255,255,255,0.25);
+    position: relative;
+  }
+  .logo::after {
+    content: ""; position: absolute; inset: 10px; border-radius: 8px;
+    background: var(--bg);
+  }
+  h1 {
+    font-size: 1.55rem; letter-spacing: 0.4px; font-weight: 700;
+    background: linear-gradient(90deg, #fff, #9edcff 40%, #c4b5fd 70%, #fff);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub { color: var(--muted); font-size: 0.86rem; margin-top: 2px; }
+
+  .status {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--panel); border: 1px solid var(--line);
+    padding: 10px 16px; border-radius: 999px; backdrop-filter: blur(12px);
+    font-size: 0.88rem;
+  }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #ff5d6c; box-shadow: 0 0 10px #ff5d6c;
+    transition: all .3s;
+  }
+  .dot.on { background: var(--lime); box-shadow: 0 0 12px var(--lime); }
+
+  .grid {
+    display: grid; gap: 18px;
+    grid-template-columns: 1.4fr 1fr;
+    grid-template-areas:
+      "spectrum vu"
+      "leds    controls";
+  }
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: 1fr; grid-template-areas: "spectrum" "vu" "leds" "controls"; }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent 40%);
+    pointer-events: none;
+  }
+  .card h2 {
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1.6px;
+    color: var(--muted); margin-bottom: 12px; display: flex;
+    justify-content: space-between; align-items: center;
+  }
+  .badge {
+    font-size: 0.7rem; padding: 3px 10px; border-radius: 999px;
+    background: rgba(55, 224, 255, 0.12); color: var(--cyan);
+    letter-spacing: 0.8px;
+  }
+
+  #spectrum { grid-area: spectrum; }
+  #vu-card { grid-area: vu; }
+  #leds-card { grid-area: leds; }
+  #controls { grid-area: controls; }
+
+  canvas {
+    width: 100%; display: block; border-radius: 12px;
+    background: linear-gradient(180deg, rgba(8,12,28,0.65), rgba(8,12,28,0.25));
+  }
+
+  .vu-row { display: flex; flex-direction: column; gap: 14px; }
+  .vu-big {
+    font-size: 2.6rem; font-weight: 700; letter-spacing: -1px;
+    background: linear-gradient(90deg, var(--cyan), var(--violet), var(--pink));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .vu-track {
+    height: 14px; border-radius: 999px; overflow: hidden;
+    background: rgba(255,255,255,0.06); position: relative;
+  }
+  .vu-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #37e0ff, #7dffb3, #ffe066, #ff7a5c, #ff5d8f);
+    box-shadow: 0 0 18px rgba(55,224,255,0.55);
+    transition: width 80ms linear;
+    border-radius: 999px;
+  }
+  .vu-peak {
+    position: absolute; top: -3px; width: 4px; height: 20px;
+    background: #fff; border-radius: 2px; left: 0%;
+    box-shadow: 0 0 10px #fff; transition: left 80ms linear;
+  }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+  .stat {
+    background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+    border-radius: 12px; padding: 10px 12px;
+  }
+  .stat .k { color: var(--muted); font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase; }
+  .stat .v { font-size: 1.15rem; font-weight: 600; margin-top: 2px; }
+
+  .led-strip {
+    display: flex; gap: 4px; height: 74px; align-items: flex-end;
+    padding: 8px 4px; border-radius: 12px;
+    background: rgba(8,12,28,0.55); border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .led {
+    flex: 1 1 0; min-width: 4px; border-radius: 3px 3px 2px 2px;
+    height: 70%; background: #223; transition: background 40ms linear;
+  }
+
+  .controls-grid { display: flex; flex-direction: column; gap: 16px; }
+  .ctrl label {
+    display: flex; justify-content: space-between;
+    color: var(--muted); font-size: 0.82rem; margin-bottom: 8px;
+    letter-spacing: 0.4px;
+  }
+  .ctrl label b { color: var(--txt); font-variant-numeric: tabular-nums; }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 6px; border-radius: 999px;
+    background: rgba(255,255,255,0.1); outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), var(--violet));
+    cursor: pointer; box-shadow: 0 0 12px rgba(55,224,255,0.7);
+    border: 2px solid #fff2;
+  }
+  .seg {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .seg button {
+    flex: 1 1 30%;
+    background: rgba(255,255,255,0.05); color: var(--muted);
+    border: 1px solid var(--line); border-radius: 12px;
+    padding: 10px 8px; font-size: 0.84rem; cursor: pointer;
+    transition: all .2s; letter-spacing: 0.3px;
+  }
+  .seg button:hover { background: rgba(55,224,255,0.12); color: var(--txt); transform: translateY(-1px); }
+  .seg button.active {
+    background: linear-gradient(135deg, rgba(55,224,255,0.28), rgba(167,139,250,0.28));
+    color: #fff; border-color: rgba(55,224,255,0.5);
+    box-shadow: 0 0 18px rgba(55,224,255,0.25);
+  }
+
+  footer {
+    margin-top: 28px; text-align: center; color: var(--muted); font-size: 0.78rem;
+    letter-spacing: 0.6px;
+  }
+  footer a { color: var(--cyan); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>bassline</h1>
+        <div class="sub">Audio spectrum · FFT visualiser · WS2812</div>
+      </div>
+    </div>
+    <div class="status">
+      <div class="dot" id="dot"></div>
+      <span id="statusText">connecting…</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="card" id="spectrum">
+      <h2>Realtime Spectrum <span class="badge" id="fps">— fps</span></h2>
+      <canvas id="specCanvas" height="260"></canvas>
+    </div>
+
+    <div class="card" id="vu-card">
+      <h2>Loudness / VU</h2>
+      <div class="vu-row">
+        <div class="vu-big" id="vuText">0%</div>
+        <div class="vu-track">
+          <div class="vu-fill" id="vuFill"></div>
+          <div class="vu-peak" id="vuPeak"></div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><div class="k">Peak</div><div class="v" id="vuPeakText">0%</div></div>
+          <div class="stat"><div class="k">Mode</div><div class="v" id="modeText">spectrum</div></div>
+          <div class="stat"><div class="k">Gain</div><div class="v" id="gainText">1.0×</div></div>
+          <div class="stat"><div class="k">Theme</div><div class="v" id="themeText">rainbow</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="leds-card">
+      <h2>LED Strip Mirror <span class="badge" id="ledCount">60 LEDs</span></h2>
+      <div class="led-strip" id="ledStrip"></div>
+    </div>
+
+    <div class="card" id="controls">
+      <h2>Controls</h2>
+      <div class="controls-grid">
+        <div class="ctrl">
+          <label>Gain <b id="gainVal">1.00</b></label>
+          <input type="range" id="gain" min="10" max="400" value="100">
+        </div>
+        <div class="ctrl">
+          <label>Bar decay <b id="decayVal">0.85</b></label>
+          <input type="range" id="decay" min="50" max="98" value="85">
+        </div>
+        <div class="ctrl">
+          <label>Colour theme</label>
+          <div class="seg" id="themeSeg">
+            <button data-v="rainbow" class="active">🌈 Rainbow</button>
+            <button data-v="fire">🔥 Fire</button>
+            <button data-v="ice">❄️ Ice</button>
+          </div>
+        </div>
+        <div class="ctrl">
+          <label>Mode</label>
+          <div class="seg" id="modeSeg">
+            <button data-v="spectrum" class="active">📊 Spectrum</button>
+            <button data-v="vu">📈 VU Meter</button>
+            <button data-v="breathing">🫧 Breathing</button>
+            <button data-v="sparkle">✨ Sparkle</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    bassline · ESP32 FFT music visualiser · <a href="/health">/health</a> ·
+    dashboard v1.0
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const N_LEDS = 60;
+  const BIN_COUNT = 48;
+
+  const $ = (id) => document.getElementById(id);
+  const dot = $("dot");
+  const statusText = $("statusText");
+  const canvas = $("specCanvas");
+  const ctx = canvas.getContext("2d");
+  const ledStrip = $("ledStrip");
+
+  // ---- LED strip DOM ----
+  const leds = [];
+  for (let i = 0; i < N_LEDS; i++) {
+    const d = document.createElement("div");
+    d.className = "led";
+    ledStrip.appendChild(d);
+    leds.push(d);
+  }
+  $("ledCount").textContent = N_LEDS + " LEDs";
+
+  // ---- state ----
+  let bins = new Array(BIN_COUNT).fill(0);
+  let peaks = new Array(BIN_COUNT).fill(0);
+  let vu = 0, vuPeak = 0;
+  let theme = "rainbow";
+  let mode = "spectrum";
+  let gain = 1.0, decay = 0.85;
+  let frameCount = 0, lastFpsTs = performance.now();
+
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth || 600;
+    const h = canvas.clientHeight || 260;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function clamp01(x) { return Math.max(0, Math.min(1, x)); }
+
+  // colour ramps (t in 0..1) -> [r,g,b]
+  function colorFor(t, which) {
+    t = clamp01(t);
+    which = which || theme;
+    if (which === "fire") {
+      return [
+        255 * Math.min(1, t * 1.8),
+        255 * clamp01((t - 0.35) * 1.8),
+        255 * clamp01((t - 0.75) * 3),
+      ];
+    }
+    if (which === "ice") {
+      return [
+        255 * clamp01((t - 0.7) * 3),
+        255 * Math.min(1, t * 1.4),
+        255 * Math.min(1, t * 1.2 + 0.15),
+      ];
+    }
+    // rainbow: blue -> cyan -> green -> yellow -> red
+    const x = t * 4;
+    if (x < 1) return [0, 255 * x, 255];
+    if (x < 2) return [0, 255, 255 * (2 - x)];
+    if (x < 3) return [255 * (x - 2), 255, 0];
+    return [255, 255 * Math.max(0, 1 - (x - 3) * 1.4), 0];
+  }
+  function cssColor(t, a) {
+    const c = colorFor(t);
+    return "rgba(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + "," + (a == null ? 1 : a) + ")";
+  }
+
+  function drawSpectrum() {
+    const w = canvas.clientWidth || 600;
+    const h = canvas.clientHeight || 260;
+    ctx.clearRect(0, 0, w, h);
+
+    // subtle grid
+    ctx.strokeStyle = "rgba(120,160,255,0.08)";
+    ctx.lineWidth = 1;
+    for (let y = 0; y < h; y += h / 5) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+
+    const n = bins.length;
+    const gap = 4;
+    const bw = Math.max(3, (w - gap * (n + 1)) / n);
+    const base = h - 10;
+    const top = 14;
+
+    for (let i = 0; i < n; i++) {
+      const v = clamp01(bins[i]);
+      const bh = Math.max(3, (base - top) * v);
+      const x = gap + i * (bw + gap);
+      const y = base - bh;
+
+      const grad = ctx.createLinearGradient(0, y, 0, base);
+      grad.addColorStop(0, cssColor(Math.min(1, v * 1.15), 0.98));
+      grad.addColorStop(1, cssColor(v * 0.45, 0.22));
+
+      ctx.fillStyle = grad;
+      ctx.shadowColor = cssColor(v, 0.85);
+      ctx.shadowBlur = 16 + v * 22;
+      roundRect(x, y, bw, bh, Math.min(6, bw / 2));
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // peak cap
+      const pv = clamp01(peaks[i]);
+      if (pv > 0.02) {
+        const py = base - (base - top) * pv;
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.shadowColor = "rgba(255,255,255,0.7)";
+        ctx.shadowBlur = 10;
+        ctx.fillRect(x, py - 2, bw, 3);
+        ctx.shadowBlur = 0;
+      }
+    }
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function drawLeds() {
+    const n = leds.length;
+    for (let i = 0; i < n; i++) {
+      const pos = i / (n - 1);
+      // mirror around centre for the physical strip look
+      const mirrored = pos < 0.5 ? pos * 2 : 2 - pos * 2;
+      const b = Math.min(bins.length - 1, Math.floor(mirrored * (bins.length - 1)));
+      const v = clamp01(bins[b] || 0);
+      const c = colorFor(v);
+      const glow = v > 0.55 ? 10 + v * 18 : 0;
+      leds[i].style.background =
+        "rgb(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + ")";
+      leds[i].style.boxShadow = glow ? "0 0 " + glow + "px rgba(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + ",0.85)" : "none";
+      leds[i].style.opacity = String(0.22 + 0.78 * Math.max(v, 0.12));
+    }
+  }
+
+  function updateVU() {
+    const pct = Math.round(clamp01(vu) * 100);
+    const pk = Math.round(clamp01(vuPeak) * 100);
+    $("vuText").textContent = pct + "%";
+    $("vuFill").style.width = pct + "%";
+    $("vuPeak").style.left = pk + "%";
+    $("vuPeakText").textContent = pk + "%";
+    $("modeText").textContent = mode;
+    $("gainText").textContent = gain.toFixed(1) + "×";
+    $("themeText").textContent = theme;
+  }
+
+  function render() {
+    drawSpectrum();
+    drawLeds();
+    updateVU();
+    frameCount++;
+    const now = performance.now();
+    if (now - lastFpsTs > 1000) {
+      $("fps").textContent = Math.round(frameCount * 1000 / (now - lastFpsTs)) + " fps";
+      frameCount = 0;
+      lastFpsTs = now;
+    }
+    requestAnimationFrame(render);
+  }
+  requestAnimationFrame(render);
+
+  // ---- WebSocket ----
+  let ws = null;
+  let retry = 500;
+
+  function setConnected(ok) {
+    dot.classList.toggle("on", ok);
+    statusText.textContent = ok ? "live" : "disconnected";
+  }
+
+  function connect() {
+    const proto = location.protocol === "https:" ? "wss://" : "ws://";
+    const url = proto + location.host + "/ws";
+    try {
+      ws = new WebSocket(url);
+    } catch (e) {
+      setConnected(false);
+      setTimeout(connect, retry);
+      return;
+    }
+
+    ws.onopen = function () {
+      retry = 500;
+      setConnected(true);
+      sendState();
+    };
+    ws.onclose = function () {
+      setConnected(false);
+      setTimeout(connect, retry);
+      retry = Math.min(4000, retry * 1.5);
+    };
+    ws.onerror = function () {
+      try { ws.close(); } catch (e) {}
+    };
+    ws.onmessage = function (ev) {
+      let msg;
+      try { msg = JSON.parse(ev.data); } catch (e) { return; }
+      if (msg.t !== "frame") return;
+      if (Array.isArray(msg.bins)) bins = msg.bins.map(clamp01);
+      if (Array.isArray(msg.peaks)) peaks = msg.peaks.map(clamp01);
+      if (typeof msg.vu === "number") vu = msg.vu;
+      if (typeof msg.vu_peak === "number") vuPeak = msg.vu_peak;
+      if (msg.mode) mode = msg.mode;
+      if (msg.theme) theme = msg.theme;
+      if (typeof msg.gain === "number") gain = msg.gain;
+      if (typeof msg.decay === "number") decay = msg.decay;
+    };
+  }
+
+  function sendState() {
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({
+      gain: gain,
+      decay: decay,
+      theme: theme,
+      mode: mode
+    }));
+  }
+
+  // ---- controls ----
+  const gainEl = $("gain");
+  const decayEl = $("decay");
+
+  gainEl.addEventListener("input", function () {
+    gain = Number(gainEl.value) / 100;
+    $("gainVal").textContent = gain.toFixed(2);
+    sendState();
+  });
+  decayEl.addEventListener("input", function () {
+    decay = Number(decayEl.value) / 100;
+    $("decayVal").textContent = decay.toFixed(2);
+    sendState();
+  });
+
+  function wireSeg(segId, key, applyLocal) {
+    const seg = $(segId);
+    seg.addEventListener("click", function (e) {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      seg.querySelectorAll("button").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      applyLocal(btn.dataset.v);
+      sendState();
+    });
+  }
+
+  wireSeg("themeSeg", "theme", function (v) { theme = v; });
+  wireSeg("modeSeg", "mode", function (v) { mode = v; });
+
+  connect();
+})();
+</script>
+</body>
+</html>

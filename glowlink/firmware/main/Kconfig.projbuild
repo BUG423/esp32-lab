@@ -1,0 +1,42 @@
+menu "GlowLink Configuration"
+
+    config GLOWLINK_WIFI_SSID
+        string "WiFi SSID"
+        default "your-ssid"
+
+    config GLOWLINK_WIFI_PASSWORD
+        string "WiFi Password"
+        default "your-password"
+
+    config GLOWLINK_HOSTNAME
+        string "mDNS hostname"
+        default "glowlink"
+
+    config GLOWLINK_TX_GPIO
+        int "LED TX GPIO (drive)"
+        default 4
+        help
+            GPIO that drives the LED through a 220 ohm resistor.
+
+    config GLOWLINK_RX_GPIO
+        int "LED RX ADC GPIO (sense)"
+        default 34
+        help
+            ADC1 channel pin connected to the LED anode (or a second LED).
+            e.g. GPIO34 = ADC1_CH6 on ESP32.
+
+    config GLOWLINK_BAUD
+        int "Optical baud rate (bps)"
+        range 50 2000
+        default 250
+        help
+            Slower = more reliable. 250 bps is a good demo value.
+
+    config GLOWLINK_IS_SENDER
+        bool "This node is the default sender (beacon)"
+        default y
+        help
+            Sender beacons periodically; receiver listens. Can be toggled
+            from the web panel at runtime.
+
+endmenu

@@ -1,0 +1,22 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "audio_in.c"
+        "fft.c"
+        "led_strip.c"
+        "web_server.c"
+    INCLUDE_DIRS
+        "."
+    EMBED_FILES
+        "web/index.html"
+    REQUIRES
+        driver
+        esp_adc
+        esp_event
+        esp_http_server
+        esp_netif
+        esp_timer
+        esp_wifi
+        json
+        nvs_flash
+)

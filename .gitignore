@@ -1,0 +1,60 @@
+# ==============================================================================
+# ESP32-内部 .gitignore
+# Strictly ignore build artifacts, toolchain caches, and generated configs
+# ==============================================================================
+
+# ESP-IDF build artifacts
+build/
+**/build/
+*.bin
+*.elf
+*.map
+
+# Generated ESP-IDF configuration (Keep sdkconfig.defaults)
+sdkconfig
+sdkconfig.old
+**/sdkconfig
+**/sdkconfig.old
+
+# ESP-IDF Component Manager dependencies
+managed_components/
+**/managed_components/
+dependencies.lock
+**/dependencies.lock
+
+# MicroPython generated binaries
+binaries/generated/
+**/binaries/generated/
+
+# Python Virtual Environments & Packages
+.venv/
+**/.venv/
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+
+# Python bytecode & cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+**/.pytest_cache/
+
+# Environment configs & secrets
+.env
+.env.local
+*.env
+
+# IDE & Editor temporary files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

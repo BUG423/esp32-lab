@@ -1,0 +1,98 @@
+menu "Bassline Configuration"
+
+    choice BASSLINE_MIC_TYPE
+        prompt "Microphone type"
+        default BASSLINE_MIC_I2S
+        help
+            Select how the ESP32 captures audio.
+
+        config BASSLINE_MIC_I2S
+            bool "I2S digital microphone (INMP441 / ICS-43434)"
+
+        config BASSLINE_MIC_ADC
+            bool "ADC analog microphone (electret + amp)"
+    endchoice
+
+    config BASSLINE_I2S_BCLK_GPIO
+        int "I2S BCLK GPIO"
+        depends on BASSLINE_MIC_I2S
+        default 26
+        range 0 33
+        help
+            Bit-clock pin for the I2S microphone.
+
+    config BASSLINE_I2S_WS_GPIO
+        int "I2S WS (LRCLK) GPIO"
+        depends on BASSLINE_MIC_I2S
+        default 25
+        range 0 33
+        help
+            Word-select (left/right clock) pin for the I2S microphone.
+
+    config BASSLINE_I2S_DIN_GPIO
+        int "I2S DATA IN GPIO"
+        depends on BASSLINE_MIC_I2S
+        default 33
+        range 0 39
+        help
+            Serial-data output pin of the microphone (ESP32 input).
+
+    config BASSLINE_ADC_GPIO
+        int "ADC microphone GPIO"
+        depends on BASSLINE_MIC_ADC
+        default 36
+        range 0 39
+        help
+            ADC1-capable GPIO connected to the analog mic output
+            (GPIO 32-39 on classic ESP32).
+
+    config BASSLINE_SAMPLE_RATE
+        int "Audio sample rate (Hz)"
+        default 16000
+        range 8000 48000
+        help
+            Capture rate. 16000 Hz is plenty for music visualisation
+            and keeps the FFT cheap.
+
+    config BASSLINE_FFT_SIZE
+        int "FFT window size (power of two)"
+        default 256
+        range 128 512
+        help
+            Number of samples per FFT frame. 256 or 512 recommended.
+
+    config BASSLINE_LOG_BINS
+        int "Number of log-spaced frequency bins"
+        default 48
+        range 32 64
+        help
+            How many bars the spectrum is folded into (32-64).
+
+    config BASSLINE_LED_GPIO
+        int "WS2812 LED data GPIO"
+        default 5
+        range 0 33
+        help
+            GPIO driving the DIN of the NeoPixel / WS2812 strip.
+
+    config BASSLINE_LED_COUNT
+        int "Number of LEDs on the strip"
+        default 60
+        range 1 300
+        help
+            Physical LED count.
+
+    config BASSLINE_WIFI_SSID
+        string "WiFi SSID (STA, optional)"
+        default ""
+        help
+            Leave empty to run SoftAP-only. When set, the ESP32 also
+            joins this network so you can open the dashboard on your LAN.
+
+    config BASSLINE_WIFI_PASS
+        string "WiFi password (STA, optional)"
+        default ""
+        help
+            Password for the STA network above.
+
+endmenu

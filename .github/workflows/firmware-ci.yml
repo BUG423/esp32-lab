@@ -1,0 +1,75 @@
+name: ESP32 Firmware CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "**"
+      - ".github/workflows/firmware-ci.yml"
+  pull_request:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  firmware-build:
+    name: Build ${{ matrix.project }} Firmware
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - esp-csi-radar
+          - openpal
+          - glowlink
+          - airchat
+          - bassline
+          - bytepet
+          - deckpad
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build ${{ matrix.project }} firmware with ESP-IDF v5.5.1
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.5.1
+          target: esp32
+          path: ${{ matrix.project }}/firmware
+
+  openpal-server-tests:
+    name: OpenPal Server Tests & Verification
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: openpal/server
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest pytest-asyncio
+
+      - name: Run test suite
+        run: pytest -q
+
+      - name: Smoke test OpenPal server
+        run: |
+          python -m pal_server.main &
+          sleep 3
+          curl -sf http://127.0.0.1:8080/api/status | grep -q 小帕
+          curl -sf -X POST http://127.0.0.1:8080/api/text \
+            -H 'Content-Type: application/json' -d '{"text":"你好"}' | grep -q reply

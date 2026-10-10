@@ -1,0 +1,33 @@
+menu "OpenPal Configuration"
+
+    config OPENPAL_WIFI_SSID
+        string "WiFi SSID"
+        default "your-ssid"
+
+    config OPENPAL_WIFI_PASSWORD
+        string "WiFi Password"
+        default "your-password"
+
+    config OPENPAL_SERVER_URI
+        string "OpenPal server URI"
+        default "ws://192.168.1.100:8080/ws"
+        help
+            WebSocket endpoint of the OpenPal Python server.
+
+    config OPENPAL_PTT_GPIO
+        int "Push-to-talk button GPIO"
+        default 0
+        help
+            GPIO number of the PTT button (active low, internal pull-up).
+
+    config OPENPAL_LED_GPIO
+        int "Status LED GPIO"
+        default 2
+        help
+            Onboard status LED GPIO.
+
+    config OPENPAL_SAMPLE_RATE
+        int "Audio sample rate (Hz)"
+        default 16000
+
+endmenu

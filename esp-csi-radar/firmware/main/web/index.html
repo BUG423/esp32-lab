@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ESP CSI Radar — WiFi Presence</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#121a30; --line:#243052;
+    --text:#e8eefc; --muted:#8fa3c8;
+    --ok:#2ee6a8; --warn:#ffc857; --bad:#ff6b8a;
+    --accent:#5b8cff; --accent2:#9b5bff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+    font:14px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
+  .wrap{max-width:1200px;margin:0 auto;padding:20px}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .logo{width:42px;height:42px;border-radius:12px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:grid;place-items:center;font-size:22px;box-shadow:0 8px 24px #5b8cff44}
+  h1{font-size:20px;margin:0;letter-spacing:.3px}
+  .sub{color:var(--muted);font-size:12px}
+  .badge{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .pill{padding:4px 10px;border-radius:999px;font-size:12px;
+    background:#1a2440;border:1px solid var(--line);color:var(--muted)}
+  .pill.online{color:var(--ok);border-color:#2ee6a855;background:#2ee6a812}
+  .pill.offline{color:var(--bad);border-color:#ff6b8a55;background:#ff6b8a12}
+
+  .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card h2{margin:0 0 12px;font-size:13px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+
+  .hero{display:grid;grid-template-columns:160px 1fr;gap:18px;align-items:center}
+  .orb{width:150px;height:150px;border-radius:50%;position:relative;
+    background:radial-gradient(circle at 35% 30%, #234, #0b1020 70%);
+    border:1px solid var(--line);display:grid;place-items:center}
+  .orb .core{width:86px;height:86px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #3a4b7a, #1a2440 70%);
+    transition:all .4s ease;box-shadow:0 0 0 1px #ffffff10 inset}
+  .orb.active .core{
+    background:radial-gradient(circle at 35% 30%, #2ee6a8, #0f6b52 70%);
+    box-shadow:0 0 42px #2ee6a888, 0 0 0 1px #2ee6a844 inset;
+    transform:scale(1.06)
+  }
+  .orb .ring{position:absolute;inset:-8px;border-radius:50%;
+    border:2px solid transparent;border-top-color:var(--accent);opacity:.0;
+    animation:spin 3.2s linear infinite}
+  .orb.active .ring{opacity:.9;border-top-color:var(--ok)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+  .stat{background:#0e1530;border:1px solid var(--line);border-radius:12px;padding:10px}
+  .stat .k{color:var(--muted);font-size:11px}
+  .stat .v{font-size:22px;font-weight:700;letter-spacing:.3px}
+  .stat .v small{font-size:12px;color:var(--muted);font-weight:500}
+
+  canvas{width:100%;height:220px;display:block;border-radius:12px;background:#0a1024;
+    border:1px solid var(--line)}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:11px}
+  .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:middle}
+
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  button{appearance:none;border:1px solid var(--line);background:#16203a;color:var(--text);
+    padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+  button:hover{border-color:var(--accent);background:#1a2a52}
+  button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));
+    border-color:transparent;color:white}
+
+  .note{color:var(--muted);font-size:12px;margin-top:10px}
+
+  @media (max-width:860px){
+    .grid{grid-template-columns:1fr}
+    .hero{grid-template-columns:1fr;justify-items:center;text-align:center}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">📡</div>
+    <div>
+      <h1>ESP CSI Radar</h1>
+      <div class="sub">WiFi Channel State Information · presence / motion / breathing</div>
+    </div>
+    <div class="badge">
+      <span id="conn" class="pill offline">connecting…</span>
+      <span id="ip" class="pill">—</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Presence</h2>
+      <div class="hero">
+        <div class="orb" id="orb">
+          <div class="ring"></div>
+          <div class="core"></div>
+        </div>
+        <div>
+          <div id="presenceText" style="font-size:28px;font-weight:800;letter-spacing:.5px">—</div>
+          <div class="sub" id="presenceSub">waiting for CSI frames…</div>
+          <div class="statrow">
+            <div class="stat"><div class="k">Motion energy</div>
+              <div class="v" id="energy">0.00</div></div>
+            <div class="stat"><div class="k">Baseline</div>
+              <div class="v" id="baseline">0.00</div></div>
+            <div class="stat"><div class="k">Breathing</div>
+              <div class="v"><span id="breath">—</span> <small>brpm</small></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="primary" id="btnRecal">Recalibrate baseline</button>
+        <button id="btnPause">Pause</button>
+      </div>
+      <div class="note">
+        Leave the room empty for ~15 s, then press <b>Recalibrate</b> to teach the
+        “quiet room” baseline. Walk back in — the orb should light up.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Live score</h2>
+      <canvas id="scoreCanvas" height="220"></canvas>
+      <div class="legend">
+        <span><span class="sw" style="background:#2ee6a8"></span>presence score</span>
+        <span><span class="sw" style="background:#ffc857"></span>energy (scaled)</span>
+        <span><span class="sw" style="background:#5b8cff"></span>threshold</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>CSI subcarrier amplitude</h2>
+      <canvas id="ampCanvas" height="220"></canvas>
+    </section>
+
+    <section class="card">
+      <h2>CSI temporal variance (motion signature)</h2>
+      <canvas id="varCanvas" height="220"></canvas>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const orb = $('orb');
+
+  // ---- canvas helpers ----
+  function fit(c){
+    const dpr = window.devicePixelRatio || 1;
+    const w = c.clientWidth, h = c.clientHeight;
+    c.width = w * dpr; c.height = h * dpr;
+    const ctx = c.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    return {ctx,w,h};
+  }
+
+  // ---- history for score chart ----
+  const HIST = 180;
+  const scoreHist = new Array(HIST).fill(0);
+  const energyHist = new Array(HIST).fill(0);
+
+  function drawScore(){
+    const {ctx,w,h} = fit($('scoreCanvas'));
+    ctx.clearRect(0,0,w,h);
+    // grid
+    ctx.strokeStyle = '#1c2748'; ctx.lineWidth = 1;
+    for(let i=0;i<=4;i++){
+      const y = (h-20)*i/4 + 10;
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
+    }
+    function line(arr, color, scale){
+      ctx.beginPath();
+      arr.forEach((v,i)=>{
+        const x = i*(w/(HIST-1));
+        const y = h-10 - (h-30)*Math.min(1, v*scale);
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      });
+      ctx.strokeStyle=color; ctx.lineWidth=2; ctx.stroke();
+    }
+    // threshold line at score 1.0 region — draw at 0.5 for visual
+    ctx.strokeStyle='#5b8cff88'; ctx.setLineDash([6,4]); ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0, h-10-(h-30)*0.5); ctx.lineTo(w, h-10-(h-30)*0.5); ctx.stroke();
+    ctx.setLineDash([]);
+
+    line(scoreHist, '#2ee6a8', 1.0);
+    line(energyHist, '#ffc857', 0.15); // energy is typically >> 1
+  }
+
+  function drawBars(id, values, color1, color2){
+    const {ctx,w,h} = fit($(id));
+    ctx.clearRect(0,0,w,h);
+    const n = values.length;
+    const max = Math.max(0.001, ...values) * 1.15;
+    const bw = w/n;
+    for(let i=0;i<n;i++){
+      const v = values[i]/max;
+      const bh = (h-16)*v;
+      const g = ctx.createLinearGradient(0,h-10-bh,0,h-10);
+      g.addColorStop(0,color1); g.addColorStop(1,color2);
+      ctx.fillStyle = g;
+      ctx.fillRect(i*bw+1, h-10-bh, Math.max(1,bw-2), bh);
+    }
+  }
+
+  // ---- websocket ----
+  let ws, paused=false, reconnectTimer;
+  const AMP = new Array(64).fill(0);
+  const VAR = new Array(64).fill(0);
+
+  function connect(){
+    const proto = location.protocol==='https:'?'wss':'ws';
+    const url = proto+'://'+location.host+'/ws';
+    ws = new WebSocket(url);
+
+    ws.onopen = ()=>{
+      $('conn').className = 'pill online';
+      $('conn').textContent = 'live';
+    };
+    ws.onclose = ()=>{
+      $('conn').className = 'pill offline';
+      $('conn').textContent = 'offline';
+      clearTimeout(reconnectTimer);
+      reconnectTimer = setTimeout(connect, 1500);
+    };
+    ws.onerror = ()=> ws.close();
+    ws.onmessage = ev => {
+      if(paused) return;
+      let d;
+      try{ d = JSON.parse(ev.data); }catch(e){ return; }
+      if(d.type !== 'csi') return;
+      update(d);
+    };
+  }
+
+  function update(d){
+    $('energy').textContent = d.energy.toFixed(3);
+    $('baseline').textContent = d.baseline.toFixed(3);
+    $('breath').textContent = d.breath>0 ? d.breath.toFixed(1) : '—';
+
+    if(d.present){
+      orb.classList.add('active');
+      $('presenceText').textContent = 'PRESENCE';
+      $('presenceText').style.color = 'var(--ok)';
+      $('presenceSub').textContent = 'score ' + d.score.toFixed(2) + ' · samples ' + d.samples;
+    }else{
+      orb.classList.remove('active');
+      $('presenceText').textContent = 'EMPTY';
+      $('presenceText').style.color = 'var(--muted)';
+      $('presenceSub').textContent = 'score ' + d.score.toFixed(2) + ' · samples ' + d.samples;
+    }
+
+    scoreHist.push(Math.min(1, d.score)); scoreHist.shift();
+    energyHist.push(d.energy); energyHist.shift();
+
+    if(Array.isArray(d.amp)) for(let i=0;i<64 && i<d.amp.length;i++) AMP[i]=d.amp[i];
+    if(Array.isArray(d.var)) for(let i=0;i<64 && i<d.var.length;i++) VAR[i]=d.var[i];
+
+    drawScore();
+    drawBars('ampCanvas', AMP, '#5b8cff', '#1a2a66');
+    drawBars('varCanvas', VAR, '#9b5bff', '#2a1a66');
+  }
+
+  // ---- controls ----
+  $('btnRecal').onclick = ()=>{
+    if(ws && ws.readyState===1) ws.send(JSON.stringify({cmd:'recalibrate'}));
+  };
+  $('btnPause').onclick = ()=>{
+    paused = !paused;
+    $('btnPause').textContent = paused ? 'Resume' : 'Pause';
+  };
+
+  // ---- status poll for IP label ----
+  async function pollStatus(){
+    try{
+      const r = await fetch('/api/status');
+      const d = await r.json();
+      if(d.ip) $('ip').textContent = d.ip;
+    }catch(e){ /* ignore */ }
+    setTimeout(pollStatus, 5000);
+  }
+
+  // ---- boot ----
+  window.addEventListener('resize', ()=>{ drawScore(); drawBars('ampCanvas',AMP,'#5b8cff','#1a2a66'); drawBars('varCanvas',VAR,'#9b5bff','#2a1a66'); });
+  drawScore(); drawBars('ampCanvas',AMP,'#5b8cff','#1a2a66'); drawBars('varCanvas',VAR,'#9b5bff','#2a1a66');
+  connect();
+  pollStatus();
+})();
+</script>
+</body>
+</html>

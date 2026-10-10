@@ -1,0 +1,68 @@
+menu "CSI Radar Configuration"
+
+    config CSI_RADAR_WIFI_SSID
+        string "WiFi SSID"
+        default "your-ssid"
+        help
+            SSID of the WiFi network to join (STA mode).
+
+    config CSI_RADAR_WIFI_PASSWORD
+        string "WiFi Password"
+        default "your-password"
+        help
+            Password of the WiFi network.
+
+    config CSI_RADAR_HOSTNAME
+        string "mDNS hostname"
+        default "csi-radar"
+        help
+            Device will be reachable at http://<hostname>.local
+
+    config CSI_RADAR_PRESENCE_THRESHOLD_X100
+        int "Presence energy threshold x100"
+        range 100 1000
+        default 250
+        help
+            Motion energy above baseline * (value/100) triggers presence.
+            250 means threshold = 2.5.
+
+    config CSI_RADAR_BASELINE_ALPHA_X1000
+        int "Baseline EMA alpha x1000"
+        range 1 200
+        default 20
+        help
+            Smoothing factor for adaptive empty-room baseline.
+            20 means alpha = 0.02.
+
+    config CSI_RADAR_MQTT_ENABLE
+        bool "Enable Home Assistant MQTT discovery"
+        default n
+        help
+            Publish presence / motion / breathing sensors to an MQTT broker
+            and auto-register them in Home Assistant via MQTT discovery.
+
+    config CSI_RADAR_MQTT_URI
+        string "MQTT broker URI"
+        depends on CSI_RADAR_MQTT_ENABLE
+        default "mqtt://192.168.1.100:1883"
+        help
+            e.g. mqtt://homeassistant.local:1883
+
+    config CSI_RADAR_MQTT_USERNAME
+        string "MQTT username (optional)"
+        depends on CSI_RADAR_MQTT_ENABLE
+        default ""
+
+    config CSI_RADAR_MQTT_PASSWORD
+        string "MQTT password (optional)"
+        depends on CSI_RADAR_MQTT_ENABLE
+        default ""
+
+    config CSI_RADAR_MQTT_TOPIC_PREFIX
+        string "MQTT topic prefix"
+        depends on CSI_RADAR_MQTT_ENABLE
+        default "csi_radar"
+        help
+            State at <prefix>/state, availability at <prefix>/status.
+
+endmenu

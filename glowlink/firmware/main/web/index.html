@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GlowLink · LED 光通信</title>
+<style>
+  :root{
+    --bg:#070b16; --panel:#0f1730; --line:#243052;
+    --text:#e8eefc; --muted:#8fa3c8;
+    --ok:#2ee6a8; --warn:#ffc857; --bad:#ff6b8a;
+    --accent:#5b8cff; --glow:#2ee6a8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);
+    font:14px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,"PingFang SC","Microsoft YaHei";}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .logo{width:46px;height:46px;border-radius:14px;
+    background:radial-gradient(circle at 35% 30%, #7dffb3, #0d9b6c 60%, #063);
+    box-shadow:0 0 30px #2ee6a855;display:grid;place-items:center;font-size:22px}
+  h1{margin:0;font-size:22px}
+  .sub{color:var(--muted);font-size:12px}
+  .badge{margin-left:auto;display:flex;gap:8px}
+  .pill{padding:5px 11px;border-radius:999px;font-size:12px;background:#1a2440;border:1px solid var(--line);color:var(--muted)}
+  .pill.on{color:var(--ok);border-color:#2ee6a855;background:#2ee6a812}
+
+  .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card h2{margin:0 0 12px;font-size:12px;color:var(--muted);letter-spacing:.9px;text-transform:uppercase}
+
+  canvas{width:100%;height:220px;display:block;border-radius:12px;background:#060b18;border:1px solid var(--line)}
+
+  .statrow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+  .stat{background:#0c1328;border:1px solid var(--line);border-radius:12px;padding:10px}
+  .stat .k{color:var(--muted);font-size:11px}
+  .stat .v{font-size:20px;font-weight:700}
+
+  .orb{width:120px;height:120px;border-radius:50%;margin:6px auto 12px;
+    background:radial-gradient(circle at 35% 30%, #1a3, #041 70%);
+    box-shadow:0 0 40px var(--glow);transition:box-shadow .3s, transform .3s}
+  .orb.tx{transform:scale(1.08);box-shadow:0 0 80px #2ee6a8}
+  .orb.rx{box-shadow:0 0 50px #5b8cff}
+
+  .chat{height:200px;overflow:auto;background:#060b18;border:1px solid var(--line);
+    border-radius:12px;padding:10px;font-family:ui-monospace,monospace;font-size:12px;line-height:1.7}
+  .chat .tx{color:#2ee6a8}
+  .chat .rx{color:#7db3ff}
+
+  .row{display:flex;gap:8px;margin-top:12px}
+  input[type=text]{flex:1;background:#0c1328;border:1px solid var(--line);color:var(--text);
+    padding:11px 12px;border-radius:10px;outline:none}
+  input:focus{border-color:var(--accent)}
+  button{appearance:none;border:1px solid var(--line);background:#16203a;color:var(--text);
+    padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+  button:hover{border-color:var(--accent);background:#1a2a52}
+  button.primary{background:linear-gradient(135deg,#2ee6a8,#0d9b6c);border-color:transparent;color:#042}
+
+  .note{color:var(--muted);font-size:12px;margin-top:10px;line-height:1.7}
+
+  @media (max-width:880px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">💡</div>
+    <div>
+      <h1>GlowLink</h1>
+      <div class="sub">LED 光通信 · 两颗灯就能聊天 · 示波器可视化</div>
+    </div>
+    <div class="badge">
+      <span id="conn" class="pill">connecting…</span>
+      <span id="pair" class="pill">未配对</span>
+      <span id="ip" class="pill">—</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <h2>链路示波器 · Optical scope</h2>
+      <canvas id="scope" height="220"></canvas>
+      <div class="statrow">
+        <div class="stat"><div class="k">信号幅度</div><div class="v" id="signal">0</div></div>
+        <div class="stat"><div class="k">信噪比</div><div class="v" id="snr">0 dB</div></div>
+        <div class="stat"><div class="k">链路质量</div><div class="v" id="quality">0%</div></div>
+        <div class="stat"><div class="k">误码</div><div class="v" id="err">0</div></div>
+      </div>
+
+      <h2>消息控制台</h2>
+      <div class="chat" id="chat"></div>
+      <div class="row">
+        <input id="input" type="text" placeholder="输入要通过光发送的消息…" autocomplete="off">
+        <button class="primary" id="btnSend">💡 发送</button>
+      </div>
+      <div class="row">
+        <button id="btnBeacon">发送 Hello</button>
+        <button id="btnCal">重新校准</button>
+      </div>
+      <div class="note">
+        把两块板子的 LED <b>正对</b>放置，距离 2–20 cm。发送时 TX LED 会闪，
+        对端 RX LED 被当作光电二极管采样。链路质量取决于环境光、距离、对准。
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>节点状态</h2>
+      <div class="orb" id="orb"></div>
+      <div class="statrow" style="grid-template-columns:1fr 1fr">
+        <div class="stat"><div class="k">TX 帧</div><div class="v" id="tx">0</div></div>
+        <div class="stat"><div class="k">RX 帧</div><div class="v" id="rx">0</div></div>
+      </div>
+
+      <h2>光配对 · Optical pairing</h2>
+      <div class="row">
+        <button class="primary" id="btnPair">✨ 开始光配对</button>
+        <button id="btnUnpair">解除配对</button>
+      </div>
+      <div class="note" id="pairNote">
+        点击「开始光配对」后，本机会把一把随机密钥用光闪出去；
+        对端收到即自动完成配对，之后消息走加密通道。密钥只经过光，不经过任何网络。
+      </div>
+
+      <div class="note">
+        <b>原理：</b>LED 既是发光器，也是光电二极管。<br>
+        TX：GPIO 驱动 LED 闪烁（曼彻斯特编码）。<br>
+        RX：ADC 采样 LED 两端微弱电压，还原比特流。<br><br>
+        <b>协议：</b>0xAA×3 + LEN + PAYLOAD + XOR-CRC8<br>
+        <b>波特率：</b>250 bps（可 menuconfig 调整）
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let ws;
+
+function fit(c){
+  const dpr = window.devicePixelRatio || 1;
+  const w = c.clientWidth, h = c.clientHeight;
+  c.width = w * dpr; c.height = h * dpr;
+  const ctx = c.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx,w,h};
+}
+
+function drawScope(wave){
+  const {ctx,w,h} = fit($('scope'));
+  ctx.clearRect(0,0,w,h);
+  // grid
+  ctx.strokeStyle = '#152040';
+  for(let i=0;i<=4;i++){
+    const y = (h-20)*i/4 + 10;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
+  }
+  if(!wave || wave.length<2) return;
+
+  const min = Math.min(...wave), max = Math.max(...wave);
+  const span = Math.max(1, max-min);
+  ctx.beginPath();
+  wave.forEach((v,i)=>{
+    const x = i*(w/(wave.length-1));
+    const y = h-10 - (h-30)*((v-min)/span);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle = '#2ee6a8';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#2ee6a8';
+  ctx.shadowBlur = 8;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+function addLog(line){
+  const div = document.createElement('div');
+  if(line.startsWith('TX')) div.className='tx';
+  else if(line.startsWith('RX')) div.className='rx';
+  div.textContent = line;
+  $('chat').appendChild(div);
+  $('chat').scrollTop = $('chat').scrollHeight;
+}
+
+function setPair(state, encrypted){
+  const el = $('pair');
+  if(state==='paired'){
+    el.textContent = encrypted ? '已配对 · 加密' : '已配对';
+    el.classList.add('on');
+    $('pairNote').innerHTML = '配对成功。后续消息经过<b>光密钥加密</b>。密钥只经过光，不经过任何网络。';
+  }else if(state==='waiting'){
+    el.textContent = '配对中…';
+    el.classList.remove('on');
+    $('pairNote').innerHTML = '正在等待对端接收密钥——请确保两块板子的 LED 正对、距离 2–20 cm。';
+  }else{
+    el.textContent = '未配对';
+    el.classList.remove('on');
+  }
+}
+
+async function post(url){
+  const r = await fetch(url, {method:'POST'});
+  return r.json();
+}
+
+function connect(){
+  const proto = location.protocol==='https:'?'wss':'ws';
+  ws = new WebSocket(proto+'://'+location.host+'/ws');
+  ws.onopen = ()=>{
+    $('conn').textContent = 'live';
+    $('conn').classList.add('on');
+  };
+  ws.onclose = ()=>{
+    $('conn').textContent = 'offline';
+    $('conn').classList.remove('on');
+    setTimeout(connect, 1500);
+  };
+  ws.onmessage = ev => {
+    let d; try{ d=JSON.parse(ev.data);}catch{return;}
+    $('signal').textContent = d.signal?.toFixed?.(0) ?? '0';
+    $('snr').textContent = (d.snr_db??0).toFixed(1)+' dB';
+    $('quality').textContent = (d.quality??0)+'%';
+    $('err').textContent = d.err ?? 0;
+    $('tx').textContent = d.tx ?? 0;
+    $('rx').textContent = d.rx ?? 0;
+    if(d.ip) $('ip').textContent = d.ip;
+    if(d.pair) setPair(d.pair, !!d.encrypted);
+    if(d.wave) drawScope(d.wave);
+    if(Array.isArray(d.log)){
+      $('chat').innerHTML='';
+      d.log.forEach(addLog);
+    }
+  };
+}
+
+$('btnSend').onclick = ()=>{
+  const t = $('input').value.trim();
+  if(!t) return;
+  ws.send(JSON.stringify({cmd:'send', text:t}));
+  $('input').value='';
+};
+$('input').addEventListener('keydown', e=>{
+  if(e.key==='Enter') $('btnSend').click();
+});
+$('btnBeacon').onclick = ()=> ws.send(JSON.stringify({cmd:'send', text:'Hello from GlowLink 👋'}));
+$('btnCal').onclick = ()=> ws.send(JSON.stringify({cmd:'calibrate'}));
+$('btnPair').onclick = async ()=>{
+  const r = await post('/api/pair').catch(()=>null);
+  if(r && r.ok) addLog('PAIR offer sent — 等待对端确认');
+};
+$('btnUnpair').onclick = async ()=>{
+  const r = await post('/api/unpair').catch(()=>null);
+  if(r && r.ok) addLog('PAIR unpaired');
+};
+
+connect();
+</script>
+</body>
+</html>

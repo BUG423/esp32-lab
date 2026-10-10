@@ -1,0 +1,33 @@
+menu "AirChat Configuration"
+
+    config AIRCHAT_NICKNAME
+        string "Node nickname"
+        default "anon"
+        help
+            Shown next to every message you send. Max 32 characters
+            (longer values are truncated at runtime).
+
+    config AIRCHAT_CHANNEL
+        int "WiFi / ESP-NOW channel"
+        range 1 13
+        default 6
+        help
+            Radio channel used for both SoftAP and ESP-NOW broadcast.
+            Every node in the same group must use the same channel.
+
+    config AIRCHAT_LED_GPIO
+        int "Activity LED GPIO"
+        default 2
+        help
+            GPIO driving the activity LED. Flashes on every TX and RX.
+            On most ESP32 dev boards GPIO2 is the onboard blue LED.
+
+    config AIRCHAT_AP_PASSWORD
+        string "SoftAP password (empty = open)"
+        default ""
+        help
+            Password for the airchat-XXXX access point. Leave empty for an
+            open network (easiest for field use). If set, it must be at
+            least 8 characters (WPA2).
+
+endmenu
