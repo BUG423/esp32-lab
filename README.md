@@ -25,6 +25,14 @@
 
 ---
 
+## 🖼️ 实验看板与交互预览
+
+| WiFi CSI 隔墙人体感知雷达 (esp-csi-radar) | 桌面虚拟电子宠物状态交互 (bytepet) |
+| :---: | :---: |
+| ![WiFi CSI 雷达看板](./docs/images/csi-radar-preview.png) | ![桌面电子宠物交互面板](./docs/images/bytepet-preview.png) |
+
+---
+
 ## ⚡ 一键构建
 
 仓库根目录提供全自动构建脚本，方便快速验证与固件编译：
