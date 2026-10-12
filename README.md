@@ -22,6 +22,7 @@
 | [**bassline**](./bassline) | 实时 FFT 音频频谱计算与 WS2812 律动流光灯 | ESP32 + 麦克风 (I2S/ADC) + WS2812B |
 | [**deckpad**](./deckpad) | 低延迟 BLE 蓝牙宏键盘与 Web 热键配置 | ESP32 + 机械轴 / 触摸按键 |
 | [**firmware-expansion-board**](./firmware-expansion-board) | 面向传感器扩展板的定制 MicroPython v1.27.0 固件层 | ESP32 + 传感器扩展板 |
+| [**openharmony-certification**](./openharmony-certification) | ESP32 开源鸿蒙轻量系统 (OpenHarmony Mini System) 兼容性认证与基线固件、LiteOS-M 调度抽象、SAMGR 微内核服务框架与 HDF 平台驱动装载 | ESP32-WROOM-32 / NodeMCU-32S + 4MB Flash |
 
 ---
 

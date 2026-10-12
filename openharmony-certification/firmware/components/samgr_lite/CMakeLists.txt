@@ -1,0 +1,9 @@
+idf_component_register(
+    SRCS
+        "src/samgr_lite.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        freertos
+        hilog_lite
+)

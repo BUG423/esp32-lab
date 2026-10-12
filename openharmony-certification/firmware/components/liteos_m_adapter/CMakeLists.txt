@@ -1,0 +1,16 @@
+idf_component_register(
+    SRCS
+        "src/los_task.c"
+        "src/los_mux.c"
+        "src/los_sem.c"
+        "src/los_queue.c"
+        "src/los_swtmr.c"
+        "src/los_memory.c"
+        "src/los_kernel.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        freertos
+        heap
+        esp_common
+)

@@ -1,0 +1,2 @@
+# OpenHarmony XTS Test Suite & Runner Dependencies
+cryptography>=41.0.0

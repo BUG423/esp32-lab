@@ -1,0 +1,10 @@
+idf_component_register(
+    SRCS
+        "src/kvstore_lite.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        nvs_flash
+        freertos
+        hilog_lite
+)

@@ -1,0 +1,22 @@
+idf_component_register(
+    SRCS
+        "main.c"
+    INCLUDE_DIRS
+        "."
+    REQUIRES
+        hilog_lite
+        liteos_m_adapter
+        samgr_lite
+        hdf_lite
+        kvstore_lite
+        nvs_flash
+        esp_wifi
+        esp_netif
+        esp_event
+        esp_timer
+        vfs
+        spiffs
+        driver
+        freertos
+        lwip
+)

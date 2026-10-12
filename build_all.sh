@@ -14,19 +14,20 @@ show_help() {
   ./build_all.sh [选项 / options] [项目名 / project_names...]
 
 示例 / Examples:
-  ./build_all.sh                     # 编译全部 7 个实验固件 / Build all 7 firmwares
+  ./build_all.sh                     # 编译全部 8 个实验固件 / Build all 8 firmwares
   ./build_all.sh esp-csi-radar       # 仅编译 esp-csi-radar / Build specific project
   ./build_all.sh openpal glowlink    # 编译指定的多个项目 / Build specified projects
   ./build_all.sh --clean             # 清理所有编译产物并重新编译 / Clean & rebuild
 
 可用项目列表 / Available Projects:
-  - esp-csi-radar      WiFi 隔墙感知雷达 (WiFi CSI Presence Radar)
-  - openpal            本地优先 AI 语音搭子 (Local-first AI Companion)
-  - glowlink           LED 可见光对讲机 (Visible Light Transceiver)
-  - airchat            ESP-NOW 离网聊天终端 (Off-grid Mesh Chat)
-  - bassline           音频频谱 WS2812 律动灯 (Audio FFT Visualizer)
-  - bytepet            桌面电子宠物 (Desktop Virtual Pet)
-  - deckpad            BLE 蓝牙宏键盘 (BLE HID Macro Deck)
+  - esp-csi-radar             WiFi 隔墙感知雷达 (WiFi CSI Presence Radar)
+  - openpal                   本地优先 AI 语音搭子 (Local-first AI Companion)
+  - glowlink                  LED 可见光对讲机 (Visible Light Transceiver)
+  - airchat                   ESP-NOW 离网聊天终端 (Off-grid Mesh Chat)
+  - bassline                  音频频谱 WS2812 律动灯 (Audio FFT Visualizer)
+  - bytepet                   桌面电子宠物 (Desktop Virtual Pet)
+  - deckpad                   BLE 蓝牙宏键盘 (BLE HID Macro Deck)
+  - openharmony-certification 开源鸿蒙轻量系统认证固件 (OpenHarmony Mini System)
 EOF
 }
 
@@ -38,6 +39,7 @@ setup_idf() {
   fi
 
   local idf_candidates=(
+    "${SCRIPT_DIR}/../../archive_esp32/esp/esp-idf/export.sh"
     "${SCRIPT_DIR}/../esp/esp-idf/export.sh"
     "${IDF_PATH:-}/export.sh"
     "${HOME}/esp/esp-idf/export.sh"
@@ -80,7 +82,7 @@ for arg in "$@"; do
   esac
 done
 
-ALL_PROJECTS=(esp-csi-radar openpal glowlink airchat bassline bytepet deckpad)
+ALL_PROJECTS=(esp-csi-radar openpal glowlink airchat bassline bytepet deckpad openharmony-certification)
 
 if [[ ${#TARGET_PROJECTS[@]} -eq 0 ]]; then
   PROJECTS_TO_BUILD=("${ALL_PROJECTS[@]}")
@@ -119,14 +121,14 @@ for p in "${PROJECTS_TO_BUILD[@]}"; do
   fi
 
   build_start=$(date +%s)
-  if (cd "${fw_dir}" && idf.py set-target "${TARGET_CHIP}" && idf.py build); then
+  if (cd "${fw_dir}" && { [[ -f "sdkconfig" ]] || idf.py set-target "${TARGET_CHIP}"; } && idf.py build); then
     build_end=$(date +%s)
     duration=$((build_end - build_start))
 
     # 寻找生成的二进制文件
     app_bin=$(find "${fw_dir}/build" -maxdepth 1 -name "${p}.bin" 2>/dev/null | head -n 1 || true)
     if [[ -z "${app_bin}" ]]; then
-      app_bin=$(find "${fw_dir}/build" -maxdepth 1 -name "*.bin" ! -name "bootloader.bin" ! -name "partition-table.bin" 2>/dev/null | head -n 1 || true)
+      app_bin=$(find "${fw_dir}/build" -maxdepth 1 -name "*.bin" ! -name "bootloader.bin" ! -name "partition-table.bin" ! -name "ota_data_initial.bin" 2>/dev/null | head -n 1 || true)
     fi
 
     if [[ -n "${app_bin}" && -f "${app_bin}" ]]; then

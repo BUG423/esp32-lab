@@ -1,0 +1,15 @@
+idf_component_register(
+    SRCS
+        "src/hdf_manager.c"
+        "src/hdf_gpio.c"
+        "src/hdf_uart.c"
+        "src/hdf_i2c.c"
+        "src/hdf_spi.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        driver
+        hilog_lite
+        freertos
+        esp_common
+)

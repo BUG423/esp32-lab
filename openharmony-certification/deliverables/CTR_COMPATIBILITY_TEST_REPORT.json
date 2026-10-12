@@ -1,0 +1,4185 @@
+{
+  "timestamp": "2026-10-12 05:19:20 UTC",
+  "summary": {
+    "total_tests": 85,
+    "passed_tests": 85,
+    "failed_tests": 0,
+    "pass_rate": 100.0,
+    "assertions_total": 386,
+    "assertions_passed": 386,
+    "total_duration_ms": 435.35,
+    "peak_memory_kb": 3725.79,
+    "verdict": "COMPLIANT & PASSED"
+  },
+  "environment": {
+    "hardware": {
+      "chipset": "ESP32-D0WDQ6-V3",
+      "board": "ESP32-DevKitC-OHOS",
+      "architecture": "Xtensa Dual-Core 32-bit LX6 @ 240MHz",
+      "sram": "520 KB High-Speed Static RAM",
+      "flash": "4 MB Quad SPI Flash (Partition /data: 1MB LittleFS)",
+      "wireless": "Wi-Fi 802.11 b/g/n (2.4GHz) + Bluetooth v4.2 BR/EDR & BLE"
+    },
+    "os_version": "OpenHarmony 4.1.0 Release",
+    "api_version": 11,
+    "kernel": "LiteOS-M (Preemptive Real-Time Kernel with POSIX)",
+    "samgr": "SAMGR Lite (System Ability Manager Lite)",
+    "hdf": "OpenHarmony Hardware Driver Foundation (HDF) v1.0",
+    "huks": "Harmony Universal Key Store (HUKS v3.0)",
+    "host_os": "linux"
+  },
+  "subsystems": [
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "total": 15,
+      "passed": 15,
+      "failed": 0,
+      "duration_ms": 1.4479270030278713,
+      "assertions_total": 102,
+      "assertions_passed": 102,
+      "pass_rate": 100.0
+    },
+    {
+      "subsystem": "POSIX",
+      "module": "test_posix_api",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "duration_ms": 3.0378349983948283,
+      "assertions_total": 46,
+      "assertions_passed": 46,
+      "pass_rate": 100.0
+    },
+    {
+      "subsystem": "SAMGR",
+      "module": "test_samgr_lite",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "duration_ms": 0.6054520017642062,
+      "assertions_total": 34,
+      "assertions_passed": 34,
+      "pass_rate": 100.0
+    },
+    {
+      "subsystem": "Storage",
+      "module": "test_littlefs_kvstore",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "duration_ms": 1.1788579995481996,
+      "assertions_total": 42,
+      "assertions_passed": 42,
+      "pass_rate": 100.0
+    },
+    {
+      "subsystem": "HDF",
+      "module": "test_hdf_drivers",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "duration_ms": 1.7679569973552134,
+      "assertions_total": 53,
+      "assertions_passed": 53,
+      "pass_rate": 100.0
+    },
+    {
+      "subsystem": "Communication",
+      "module": "test_communication_wifi",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "duration_ms": 11.945301997911884,
+      "assertions_total": 39,
+      "assertions_passed": 39,
+      "pass_rate": 100.0
+    },
+    {
+      "subsystem": "HUKS",
+      "module": "test_huks_security",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "duration_ms": 385.22457599901827,
+      "assertions_total": 36,
+      "assertions_passed": 36,
+      "pass_rate": 100.0
+    },
+    {
+      "subsystem": "DFX",
+      "module": "test_hilog_dfx",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "duration_ms": 1.6045189986471087,
+      "assertions_total": 34,
+      "assertions_passed": 34,
+      "pass_rate": 100.0
+    }
+  ],
+  "test_cases": [
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_mempool_alloc_realloc_free",
+      "description": "Verify dynamic memory pool allocation, reallocation, and boundary free.",
+      "status": "PASS",
+      "duration_ms": 0.2524640003684908,
+      "memory_peak_bytes": 153315,
+      "assertions_total": 13,
+      "assertions_passed": 13,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694786.946
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694786.965
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Allocation of 100 bytes should return valid pointer",
+          "detail": "",
+          "time_offset_ms": 10694786.975
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "100 > 0",
+          "detail": "",
+          "time_offset_ms": 10694786.986
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "1 == 1",
+          "detail": "",
+          "time_offset_ms": 10694786.992
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "Expected not None",
+          "detail": "",
+          "time_offset_ms": 10694787.002
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "Different allocations must have distinct addresses",
+          "detail": "",
+          "time_offset_ms": 10694787.007
+        },
+        {
+          "assert_index": 8,
+          "passed": true,
+          "message": "Reallocation should succeed",
+          "detail": "",
+          "time_offset_ms": 10694787.017
+        },
+        {
+          "assert_index": 9,
+          "passed": true,
+          "message": "Freeing valid pointer should succeed",
+          "detail": "",
+          "time_offset_ms": 10694787.023
+        },
+        {
+          "assert_index": 10,
+          "passed": true,
+          "message": "Freeing second pointer should succeed",
+          "detail": "",
+          "time_offset_ms": 10694787.029
+        },
+        {
+          "assert_index": 11,
+          "passed": true,
+          "message": "Freeing non-existent pointer should return False",
+          "detail": "",
+          "time_offset_ms": 10694787.033
+        },
+        {
+          "assert_index": 12,
+          "passed": true,
+          "message": "All allocated memory must be reclaimed",
+          "detail": "",
+          "time_offset_ms": 10694787.038
+        },
+        {
+          "assert_index": 13,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694787.044
+        }
+      ]
+    },
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_mutex_basic_lock_unlock",
+      "description": "Verify mutex creation, locking, unlocking and deletion.",
+      "status": "PASS",
+      "duration_ms": 0.08285399962915108,
+      "memory_peak_bytes": 2065,
+      "assertions_total": 7,
+      "assertions_passed": 7,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "LOS_MuxCreate should return LOS_OK",
+          "detail": "",
+          "time_offset_ms": 10694787.259
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "1 > 0",
+          "detail": "",
+          "time_offset_ms": 10694787.269
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "LOS_MuxPend should succeed",
+          "detail": "",
+          "time_offset_ms": 10694787.277
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "101 == 101",
+          "detail": "",
+          "time_offset_ms": 10694787.288
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "LOS_MuxPost should succeed",
+          "detail": "",
+          "time_offset_ms": 10694787.294
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "Mutex owner should be None after release",
+          "detail": "",
+          "time_offset_ms": 10694787.299
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "LOS_MuxDelete should succeed on unlocked mutex",
+          "detail": "",
+          "time_offset_ms": 10694787.305
+        }
+      ]
+    },
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_mutex_cannot_delete_locked",
+      "description": "Verify that attempting to delete a currently locked mutex returns LOS_NOK.",
+      "status": "PASS",
+      "duration_ms": 0.054599000577582046,
+      "memory_peak_bytes": 1512,
+      "assertions_total": 2,
+      "assertions_passed": 2,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Cannot delete locked mutex",
+          "detail": "",
+          "time_offset_ms": 10694787.4
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Can delete once unlocked",
+          "detail": "",
+          "time_offset_ms": 10694787.411
+        }
+      ]
+    },
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_mutex_priority_inheritance",
+      "description": "Verify Priority Inheritance Protocol elevates lower priority task holding mutex.",
+      "status": "PASS",
+      "duration_ms": 0.09578600111126434,
+      "memory_peak_bytes": 2905,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "25 == 25",
+          "detail": "",
+          "time_offset_ms": 10694787.532
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Low priority task must inherit high priority",
+          "detail": "",
+          "time_offset_ms": 10694787.542
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Priority must be restored upon release",
+          "detail": "",
+          "time_offset_ms": 10694787.549
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Mutex should now belong to high priority task",
+          "detail": "",
+          "time_offset_ms": 10694787.553
+        }
+      ]
+    },
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_mutex_recursive_lock",
+      "description": "Verify recursive reentrant locking by the same owner task.",
+      "status": "PASS",
+      "duration_ms": 0.1095770003303187,
+      "memory_peak_bytes": 2675,
+      "assertions_total": 11,
+      "assertions_passed": 11,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694787.633
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694787.644
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694787.654
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694787.662
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Recursive lock count should be 3",
+          "detail": "",
+          "time_offset_ms": 10694787.665
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694787.674
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694787.681
+        },
+        {
+          "assert_index": 8,
+          "passed": true,
+          "message": "1 == 1",
+          "detail": "",
+          "time_offset_ms": 10694787.687
+        },
+        {
+          "assert_index": 9,
+          "passed": true,
+          "message": "200 == 200",
+          "detail": "",
+          "time_offset_ms": 10694787.692
+        },
+        {
+          "assert_index": 10,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694787.711
+        },
+        {
+          "assert_index": 11,
+          "passed": true,
+          "message": "Expected None",
+          "detail": "",
+          "time_offset_ms": 10694787.715
+        }
+      ]
+    },
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_queue_fifo_read_write",
+      "description": "Verify message queue FIFO ordering and message integrity.",
+      "status": "PASS",
+      "duration_ms": 0.12326000069151632,
+      "memory_peak_bytes": 5019,
+      "assertions_total": 14,
+      "assertions_passed": 14,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694787.775
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "1 > 0",
+          "detail": "",
+          "time_offset_ms": 10694787.781
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Writing b'MSG_ALPHA' should succeed",
+          "detail": "",
+          "time_offset_ms": 10694787.794
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Writing b'MSG_BETA' should succeed",
+          "detail": "",
+          "time_offset_ms": 10694787.801
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Writing b'MSG_GAMMA' should succeed",
+          "detail": "",
+          "time_offset_ms": 10694787.806
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "3 == 3",
+          "detail": "",
+          "time_offset_ms": 10694787.815
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "1 == 1",
+          "detail": "",
+          "time_offset_ms": 10694787.819
+        },
+        {
+          "assert_index": 8,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694787.827
+        },
+        {
+          "assert_index": 9,
+          "passed": true,
+          "message": "Message must preserve strict FIFO order",
+          "detail": "",
+          "time_offset_ms": 10694787.829
+        },
+        {
+          "assert_index": 10,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694787.836
+        },
+        {
+          "assert_index": 11,
+          "passed": true,
+          "message": "Message must preserve strict FIFO order",
+          "detail": "",
+          "time_offset_ms": 10694787.838
+        },
+        {
+          "assert_index": 12,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694787.844
+        },
+        {
+          "assert_index": 13,
+          "passed": true,
+          "message": "Message must preserve strict FIFO order",
+          "detail": "",
+          "time_offset_ms": 10694787.846
+        },
+        {
+          "assert_index": 14,
+          "passed": true,
+          "message": "Read from empty queue should return LOS_NOK",
+          "detail": "",
+          "time_offset_ms": 10694787.867
+        }
+      ]
+    },
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_queue_overflow_and_timeout",
+      "description": "Verify queue overflow protection when writing beyond queue length.",
+      "status": "PASS",
+      "duration_ms": 0.025070999981835485,
+      "memory_peak_bytes": 1328,
+      "assertions_total": 1,
+      "assertions_passed": 1,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Queue overflow write should be rejected",
+          "detail": "",
+          "time_offset_ms": 10694787.931
+        }
+      ]
+    },
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_semaphore_counting_and_binary",
+      "description": "Verify semaphore initialization, counting limits and non-blocking pend.",
+      "status": "PASS",
+      "duration_ms": 0.06740000026184134,
+      "memory_peak_bytes": 3530,
+      "assertions_total": 8,
+      "assertions_passed": 8,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694787.991
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694787.999
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Second pend on empty sem should fail",
+          "detail": "",
+          "time_offset_ms": 10694788.003
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694788.009
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Post beyond max_count must fail",
+          "detail": "",
+          "time_offset_ms": 10694788.013
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694788.023
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "3 == 3",
+          "detail": "",
+          "time_offset_ms": 10694788.027
+        },
+        {
+          "assert_index": 8,
+          "passed": true,
+          "message": "4 == 4",
+          "detail": "",
+          "time_offset_ms": 10694788.032
+        }
+      ]
+    },
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_semaphore_sync_producer_consumer",
+      "description": "Verify producer-consumer synchronization via counting semaphore.",
+      "status": "PASS",
+      "duration_ms": 0.08171300032699946,
+      "memory_peak_bytes": 1608,
+      "assertions_total": 2,
+      "assertions_passed": 2,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Consumer should have successfully pended 3 items",
+          "detail": "",
+          "time_offset_ms": 10694788.15
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Semaphore count should be exhausted to 0",
+          "detail": "",
+          "time_offset_ms": 10694788.154
+        }
+      ]
+    },
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_swtmr_single_shot_and_periodic",
+      "description": "Verify software timer single shot and periodic triggering behaviors.",
+      "status": "PASS",
+      "duration_ms": 0.23860799956310075,
+      "memory_peak_bytes": 3008,
+      "assertions_total": 6,
+      "assertions_passed": 6,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Periodic timer should trigger at tick 2",
+          "detail": "",
+          "time_offset_ms": 10694788.391
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Single-shot timer should not trigger yet",
+          "detail": "",
+          "time_offset_ms": 10694788.395
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Single-shot timer should trigger",
+          "detail": "",
+          "time_offset_ms": 10694788.406
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Periodic timer should trigger twice",
+          "detail": "",
+          "time_offset_ms": 10694788.414
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Single-shot timer must not re-trigger",
+          "detail": "",
+          "time_offset_ms": 10694788.424
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "Periodic timer should trigger a 3rd time",
+          "detail": "",
+          "time_offset_ms": 10694788.426
+        }
+      ]
+    },
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_task_create_delete",
+      "description": "Verify task creation with valid attributes and subsequent clean deletion.",
+      "status": "PASS",
+      "duration_ms": 0.06468399988079909,
+      "memory_peak_bytes": 3073,
+      "assertions_total": 9,
+      "assertions_passed": 9,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Task creation should return LOS_OK",
+          "detail": "",
+          "time_offset_ms": 10694788.494
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Valid Task ID must be returned",
+          "detail": "",
+          "time_offset_ms": 10694788.498
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Task should exist in kernel task map",
+          "detail": "",
+          "time_offset_ms": 10694788.501
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Task priority should match requested priority",
+          "detail": "",
+          "time_offset_ms": 10694788.504
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Initial task status should be READY",
+          "detail": "",
+          "time_offset_ms": 10694788.506
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "Scheduled task must match created task ID",
+          "detail": "",
+          "time_offset_ms": 10694788.517
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "Task entry function must be executed",
+          "detail": "",
+          "time_offset_ms": 10694788.521
+        },
+        {
+          "assert_index": 8,
+          "passed": true,
+          "message": "Task deletion should return LOS_OK",
+          "detail": "",
+          "time_offset_ms": 10694788.526
+        },
+        {
+          "assert_index": 9,
+          "passed": true,
+          "message": "Deleted task should no longer exist in kernel task map",
+          "detail": "",
+          "time_offset_ms": 10694788.529
+        }
+      ]
+    },
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_task_preemption_priority",
+      "description": "Verify that high-priority tasks immediately preempt lower-priority tasks.",
+      "status": "PASS",
+      "duration_ms": 0.06403199950000271,
+      "memory_peak_bytes": 3106,
+      "assertions_total": 5,
+      "assertions_passed": 5,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694788.599
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694788.605
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "High priority task must be scheduled first",
+          "detail": "",
+          "time_offset_ms": 10694788.614
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Low priority task scheduled after high priority",
+          "detail": "",
+          "time_offset_ms": 10694788.621
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Execution order must strictly follow priority preemption",
+          "detail": "",
+          "time_offset_ms": 10694788.625
+        }
+      ]
+    },
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_task_pri_set_get",
+      "description": "Verify dynamic priority modification and query.",
+      "status": "PASS",
+      "duration_ms": 0.05650000093737617,
+      "memory_peak_bytes": 2631,
+      "assertions_total": 6,
+      "assertions_passed": 6,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694788.686
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "20 == 20",
+          "detail": "",
+          "time_offset_ms": 10694788.693
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694788.702
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Priority should be updated to 8",
+          "detail": "",
+          "time_offset_ms": 10694788.706
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Priority > 31 must be rejected",
+          "detail": "",
+          "time_offset_ms": 10694788.71
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "Priority < 0 must be rejected",
+          "detail": "",
+          "time_offset_ms": 10694788.715
+        }
+      ]
+    },
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_task_round_robin_scheduling",
+      "description": "Verify cooperative and round-robin scheduling for equal priority tasks.",
+      "status": "PASS",
+      "duration_ms": 0.06635799945797771,
+      "memory_peak_bytes": 3072,
+      "assertions_total": 5,
+      "assertions_passed": 5,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694788.787
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694788.793
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "1 != None",
+          "detail": "",
+          "time_offset_ms": 10694788.808
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "2 != None",
+          "detail": "",
+          "time_offset_ms": 10694788.813
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Equal priority tasks should both execute in ready order",
+          "detail": "",
+          "time_offset_ms": 10694788.817
+        }
+      ]
+    },
+    {
+      "subsystem": "Kernel",
+      "module": "test_kernel_lite",
+      "class": "TestKernelLite",
+      "name": "test_task_suspend_resume",
+      "description": "Verify task suspend removes task from ready queue, and resume restores readiness.",
+      "status": "PASS",
+      "duration_ms": 0.06502100040961523,
+      "memory_peak_bytes": 3293,
+      "assertions_total": 9,
+      "assertions_passed": 9,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694788.875
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Task should initially be in ready queue",
+          "detail": "",
+          "time_offset_ms": 10694788.879
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "LOS_TaskSuspend must return LOS_OK",
+          "detail": "",
+          "time_offset_ms": 10694788.885
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "SUSPENDED == SUSPENDED",
+          "detail": "",
+          "time_offset_ms": 10694788.893
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Suspended task must not be in ready queue",
+          "detail": "",
+          "time_offset_ms": 10694788.896
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "Suspending already suspended task should fail",
+          "detail": "",
+          "time_offset_ms": 10694788.9
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "LOS_TaskResume must return LOS_OK",
+          "detail": "",
+          "time_offset_ms": 10694788.907
+        },
+        {
+          "assert_index": 8,
+          "passed": true,
+          "message": "READY == READY",
+          "detail": "",
+          "time_offset_ms": 10694788.91
+        },
+        {
+          "assert_index": 9,
+          "passed": true,
+          "message": "Resumed task must be back in ready queue",
+          "detail": "",
+          "time_offset_ms": 10694788.913
+        }
+      ]
+    },
+    {
+      "subsystem": "POSIX",
+      "module": "test_posix_api",
+      "class": "TestPosixApi",
+      "name": "test_clock_gettime_monotonic_and_realtime",
+      "description": "Verify clock_gettime for CLOCK_REALTIME and CLOCK_MONOTONIC.",
+      "status": "PASS",
+      "duration_ms": 0.10160099918721244,
+      "memory_peak_bytes": 3953,
+      "assertions_total": 8,
+      "assertions_passed": 8,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694789.672
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Realtime seconds should represent valid epoch",
+          "detail": "",
+          "time_offset_ms": 10694789.677
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "855354309 >= 0",
+          "detail": "",
+          "time_offset_ms": 10694789.683
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "855354309 < 1000000000.0",
+          "detail": "",
+          "time_offset_ms": 10694789.69
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694789.702
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694789.711
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "Monotonic clock must not decrease",
+          "detail": "",
+          "time_offset_ms": 10694789.716
+        },
+        {
+          "assert_index": 8,
+          "passed": true,
+          "message": "Invalid clock id must return EINVAL",
+          "detail": "",
+          "time_offset_ms": 10694789.722
+        }
+      ]
+    },
+    {
+      "subsystem": "POSIX",
+      "module": "test_posix_api",
+      "class": "TestPosixApi",
+      "name": "test_nanosleep_delay_precision",
+      "description": "Verify nanosleep validates timespec parameters and executes sleep delay.",
+      "status": "PASS",
+      "duration_ms": 2.3972369999682996,
+      "memory_peak_bytes": 2172,
+      "assertions_total": 2,
+      "assertions_passed": 2,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Valid nanosleep should return EOK",
+          "detail": "",
+          "time_offset_ms": 10694792.109
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "tv_nsec >= 1e9 must return EINVAL",
+          "detail": "",
+          "time_offset_ms": 10694792.144
+        }
+      ]
+    },
+    {
+      "subsystem": "POSIX",
+      "module": "test_posix_api",
+      "class": "TestPosixApi",
+      "name": "test_posix_errno_thread_isolation",
+      "description": "Verify errno thread-local isolation.",
+      "status": "PASS",
+      "duration_ms": 0.07246399945870508,
+      "memory_peak_bytes": 1874,
+      "assertions_total": 3,
+      "assertions_passed": 3,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694792.276
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "errno should reflect set value",
+          "detail": "",
+          "time_offset_ms": 10694792.297
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694792.306
+        }
+      ]
+    },
+    {
+      "subsystem": "POSIX",
+      "module": "test_posix_api",
+      "class": "TestPosixApi",
+      "name": "test_pthread_attr_stacksize",
+      "description": "Verify pthread stack size attribute modification and bounds checking.",
+      "status": "PASS",
+      "duration_ms": 0.05424000119091943,
+      "memory_peak_bytes": 2392,
+      "assertions_total": 5,
+      "assertions_passed": 5,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Default stack size should be 4096 bytes",
+          "detail": "",
+          "time_offset_ms": 10694792.363
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694792.373
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "8192 == 8192",
+          "detail": "",
+          "time_offset_ms": 10694792.38
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Stack < 1024 bytes must be rejected with EINVAL",
+          "detail": "",
+          "time_offset_ms": 10694792.385
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Excessive stack must be rejected",
+          "detail": "",
+          "time_offset_ms": 10694792.388
+        }
+      ]
+    },
+    {
+      "subsystem": "POSIX",
+      "module": "test_posix_api",
+      "class": "TestPosixApi",
+      "name": "test_pthread_create_and_join",
+      "description": "Verify pthread_create spawns thread and pthread_join receives result.",
+      "status": "PASS",
+      "duration_ms": 0.09122200026467908,
+      "memory_peak_bytes": 2660,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "pthread_create should return EOK",
+          "detail": "",
+          "time_offset_ms": 10694792.483
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Valid thread ID should be allocated",
+          "detail": "",
+          "time_offset_ms": 10694792.491
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "pthread_join should return EOK",
+          "detail": "",
+          "time_offset_ms": 10694792.502
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Thread result should match calculation (5 * 42 = 210)",
+          "detail": "",
+          "time_offset_ms": 10694792.506
+        }
+      ]
+    },
+    {
+      "subsystem": "POSIX",
+      "module": "test_posix_api",
+      "class": "TestPosixApi",
+      "name": "test_pthread_detach",
+      "description": "Verify detached thread cannot be joined.",
+      "status": "PASS",
+      "duration_ms": 0.06821599890827201,
+      "memory_peak_bytes": 2603,
+      "assertions_total": 3,
+      "assertions_passed": 3,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694792.625
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "pthread_detach should return EOK",
+          "detail": "",
+          "time_offset_ms": 10694792.636
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Joining detached thread must return EINVAL",
+          "detail": "",
+          "time_offset_ms": 10694792.644
+        }
+      ]
+    },
+    {
+      "subsystem": "POSIX",
+      "module": "test_posix_api",
+      "class": "TestPosixApi",
+      "name": "test_pthread_mutex_errorcheck",
+      "description": "Verify errorcheck mutex detects deadlock on self-relock.",
+      "status": "PASS",
+      "duration_ms": 0.0655309995636344,
+      "memory_peak_bytes": 2130,
+      "assertions_total": 3,
+      "assertions_passed": 3,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694792.742
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "ERRORCHECK mutex re-lock must return EDEADLK",
+          "detail": "",
+          "time_offset_ms": 10694792.751
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694792.762
+        }
+      ]
+    },
+    {
+      "subsystem": "POSIX",
+      "module": "test_posix_api",
+      "class": "TestPosixApi",
+      "name": "test_pthread_mutex_normal_locking",
+      "description": "Verify normal mutex lock, trylock, unlock, and destroy.",
+      "status": "PASS",
+      "duration_ms": 0.08532100036973134,
+      "memory_peak_bytes": 3068,
+      "assertions_total": 7,
+      "assertions_passed": 7,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694792.852
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "101 == 101",
+          "detail": "",
+          "time_offset_ms": 10694792.861
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Trylock from competing thread should return EBUSY",
+          "detail": "",
+          "time_offset_ms": 10694792.869
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Unlocking foreign thread mutex must return EPERM",
+          "detail": "",
+          "time_offset_ms": 10694792.875
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694792.884
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "Expected None",
+          "detail": "",
+          "time_offset_ms": 10694792.891
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694792.9
+        }
+      ]
+    },
+    {
+      "subsystem": "POSIX",
+      "module": "test_posix_api",
+      "class": "TestPosixApi",
+      "name": "test_pthread_mutex_recursive",
+      "description": "Verify recursive mutex reentrant acquisition and balanced release.",
+      "status": "PASS",
+      "duration_ms": 0.07411699880321976,
+      "memory_peak_bytes": 3669,
+      "assertions_total": 9,
+      "assertions_passed": 9,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694792.967
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694792.974
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694792.981
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Recursive mutex lock count should be 3",
+          "detail": "",
+          "time_offset_ms": 10694792.983
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694792.989
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694792.995
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "1 == 1",
+          "detail": "",
+          "time_offset_ms": 10694792.999
+        },
+        {
+          "assert_index": 8,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694793.004
+        },
+        {
+          "assert_index": 9,
+          "passed": true,
+          "message": "Mutex should be fully unlocked after 3 unlocks",
+          "detail": "",
+          "time_offset_ms": 10694793.006
+        }
+      ]
+    },
+    {
+      "subsystem": "POSIX",
+      "module": "test_posix_api",
+      "class": "TestPosixApi",
+      "name": "test_pthread_sched_yield",
+      "description": "Verify sched_yield yields processor execution.",
+      "status": "PASS",
+      "duration_ms": 0.02788600068015512,
+      "memory_peak_bytes": 1435,
+      "assertions_total": 2,
+      "assertions_passed": 2,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694793.072
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "sched_yield should increment yield counter",
+          "detail": "",
+          "time_offset_ms": 10694793.077
+        }
+      ]
+    },
+    {
+      "subsystem": "SAMGR",
+      "module": "test_samgr_lite",
+      "class": "TestSamgrLite",
+      "name": "test_samgr_async_message_dispatch",
+      "description": "Verify message tracking and queue recording.",
+      "status": "PASS",
+      "duration_ms": 0.09754699931363575,
+      "memory_peak_bytes": 2156,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694794.286
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "2 == 2",
+          "detail": "",
+          "time_offset_ms": 10694794.317
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "2 == 2",
+          "detail": "",
+          "time_offset_ms": 10694794.321
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "2 == 2",
+          "detail": "",
+          "time_offset_ms": 10694794.325
+        }
+      ]
+    },
+    {
+      "subsystem": "SAMGR",
+      "module": "test_samgr_lite",
+      "class": "TestSamgrLite",
+      "name": "test_samgr_broadcast_pub_sub",
+      "description": "Verify broadcast publisher and multiple subscriber notification.",
+      "status": "PASS",
+      "duration_ms": 0.06814999869675376,
+      "memory_peak_bytes": 1827,
+      "assertions_total": 5,
+      "assertions_passed": 5,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694794.426
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "1 == 1",
+          "detail": "",
+          "time_offset_ms": 10694794.433
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "1 == 1",
+          "detail": "",
+          "time_offset_ms": 10694794.439
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "CONNECTED == CONNECTED",
+          "detail": "",
+          "time_offset_ms": 10694794.442
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "192.168.1.100 == 192.168.1.100",
+          "detail": "",
+          "time_offset_ms": 10694794.445
+        }
+      ]
+    },
+    {
+      "subsystem": "SAMGR",
+      "module": "test_samgr_lite",
+      "class": "TestSamgrLite",
+      "name": "test_samgr_duplicate_service_rejection",
+      "description": "Verify duplicate service name registration is rejected with EC_INVALID.",
+      "status": "PASS",
+      "duration_ms": 0.05071899977338035,
+      "memory_peak_bytes": 1471,
+      "assertions_total": 2,
+      "assertions_passed": 2,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694794.527
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Duplicate service registration must fail",
+          "detail": "",
+          "time_offset_ms": 10694794.533
+        }
+      ]
+    },
+    {
+      "subsystem": "SAMGR",
+      "module": "test_samgr_lite",
+      "class": "TestSamgrLite",
+      "name": "test_samgr_feature_registration_invalid_service",
+      "description": "Verify registering feature under non-existent service returns EC_INVALID.",
+      "status": "PASS",
+      "duration_ms": 0.02984200000355486,
+      "memory_peak_bytes": 840,
+      "assertions_total": 1,
+      "assertions_passed": 1,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Registering feature to missing service must fail",
+          "detail": "",
+          "time_offset_ms": 10694794.599
+        }
+      ]
+    },
+    {
+      "subsystem": "SAMGR",
+      "module": "test_samgr_lite",
+      "class": "TestSamgrLite",
+      "name": "test_samgr_instance_singleton",
+      "description": "Verify SAMGR Lite manager operates as a true singleton.",
+      "status": "PASS",
+      "duration_ms": 0.03159200059599243,
+      "memory_peak_bytes": 736,
+      "assertions_total": 1,
+      "assertions_passed": 1,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "SAMGR instances must reference identical memory singleton",
+          "detail": "",
+          "time_offset_ms": 10694794.666
+        }
+      ]
+    },
+    {
+      "subsystem": "SAMGR",
+      "module": "test_samgr_lite",
+      "class": "TestSamgrLite",
+      "name": "test_samgr_message_routing",
+      "description": "Verify synchronous request-response routing through service.",
+      "status": "PASS",
+      "duration_ms": 0.07029100015643053,
+      "memory_peak_bytes": 2917,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694794.749
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "101 == 101",
+          "detail": "",
+          "time_offset_ms": 10694794.763
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "'Handled by kvstore_service' in container",
+          "detail": "",
+          "time_offset_ms": 10694794.77
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "-1 == -1",
+          "detail": "",
+          "time_offset_ms": 10694794.779
+        }
+      ]
+    },
+    {
+      "subsystem": "SAMGR",
+      "module": "test_samgr_lite",
+      "class": "TestSamgrLite",
+      "name": "test_samgr_register_feature",
+      "description": "Verify feature registration under an existing registered service.",
+      "status": "PASS",
+      "duration_ms": 0.04243800140102394,
+      "memory_peak_bytes": 1382,
+      "assertions_total": 3,
+      "assertions_passed": 3,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Registering feature under valid service should succeed",
+          "detail": "",
+          "time_offset_ms": 10694794.85
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "'accelerometer_feature' in container",
+          "detail": "",
+          "time_offset_ms": 10694794.856
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "sensor_service == sensor_service",
+          "detail": "",
+          "time_offset_ms": 10694794.859
+        }
+      ]
+    },
+    {
+      "subsystem": "SAMGR",
+      "module": "test_samgr_lite",
+      "class": "TestSamgrLite",
+      "name": "test_samgr_register_feature_api",
+      "description": "Verify feature IUnknown interface registration and query.",
+      "status": "PASS",
+      "duration_ms": 0.1002750013867626,
+      "memory_peak_bytes": 5564,
+      "assertions_total": 5,
+      "assertions_passed": 5,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694794.968
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Expected not None",
+          "detail": "",
+          "time_offset_ms": 10694794.977
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "IID_AUDIO_CONTROL == IID_AUDIO_CONTROL",
+          "detail": "",
+          "time_offset_ms": 10694794.98
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "50 == 50",
+          "detail": "",
+          "time_offset_ms": 10694794.986
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "85 == 85",
+          "detail": "",
+          "time_offset_ms": 10694794.992
+        }
+      ]
+    },
+    {
+      "subsystem": "SAMGR",
+      "module": "test_samgr_lite",
+      "class": "TestSamgrLite",
+      "name": "test_samgr_register_service",
+      "description": "Verify service registration, initialization lifecycle, and retrieval.",
+      "status": "PASS",
+      "duration_ms": 0.0486209992232034,
+      "memory_peak_bytes": 1485,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Registering valid service should return EC_SUCCESS",
+          "detail": "",
+          "time_offset_ms": 10694795.057
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Service on_initialize() must be invoked upon registration",
+          "detail": "",
+          "time_offset_ms": 10694795.064
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Expected not None",
+          "detail": "",
+          "time_offset_ms": 10694795.07
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "system_param_service == system_param_service",
+          "detail": "",
+          "time_offset_ms": 10694795.073
+        }
+      ]
+    },
+    {
+      "subsystem": "SAMGR",
+      "module": "test_samgr_lite",
+      "class": "TestSamgrLite",
+      "name": "test_samgr_unregister_feature_and_service",
+      "description": "Verify clean unregistration of feature and service.",
+      "status": "PASS",
+      "duration_ms": 0.06597700121346861,
+      "memory_peak_bytes": 2414,
+      "assertions_total": 5,
+      "assertions_passed": 5,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694795.155
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "'temp_feature' not in container",
+          "detail": "",
+          "time_offset_ms": 10694795.164
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694795.173
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Service on_stop() should have reset initialization",
+          "detail": "",
+          "time_offset_ms": 10694795.177
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Expected None",
+          "detail": "",
+          "time_offset_ms": 10694795.182
+        }
+      ]
+    },
+    {
+      "subsystem": "Storage",
+      "module": "test_littlefs_kvstore",
+      "class": "TestLittleFSKVStore",
+      "name": "test_kvstore_boundary_and_validation",
+      "description": "Verify key length (<= 32) and value length (<= 1024) boundary limits.",
+      "status": "PASS",
+      "duration_ms": 0.13899599980504718,
+      "memory_peak_bytes": 8530,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694796.518
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV == VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV",
+          "detail": "",
+          "time_offset_ms": 10694796.527
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Key length > 32 must fail",
+          "detail": "",
+          "time_offset_ms": 10694796.533
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Value length > 1024 must fail",
+          "detail": "",
+          "time_offset_ms": 10694796.538
+        }
+      ]
+    },
+    {
+      "subsystem": "Storage",
+      "module": "test_littlefs_kvstore",
+      "class": "TestLittleFSKVStore",
+      "name": "test_kvstore_cache_consistency",
+      "description": "Verify cache eviction ensures direct LittleFS flash persistence and readback.",
+      "status": "PASS",
+      "duration_ms": 0.10522999946260825,
+      "memory_peak_bytes": 2423,
+      "assertions_total": 3,
+      "assertions_passed": 3,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Key must not be in RAM cache after clear",
+          "detail": "",
+          "time_offset_ms": 10694796.649
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Value must be faithfully retrieved from LittleFS flash partition",
+          "detail": "",
+          "time_offset_ms": 10694796.68
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Cache should be repopulated after read",
+          "detail": "",
+          "time_offset_ms": 10694796.684
+        }
+      ]
+    },
+    {
+      "subsystem": "Storage",
+      "module": "test_littlefs_kvstore",
+      "class": "TestLittleFSKVStore",
+      "name": "test_kvstore_delete_value",
+      "description": "Verify Key-Value deletion and verify get returns None.",
+      "status": "PASS",
+      "duration_ms": 0.09710199992696289,
+      "memory_peak_bytes": 2401,
+      "assertions_total": 3,
+      "assertions_passed": 3,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "secret_token_12345 == secret_token_12345",
+          "detail": "",
+          "time_offset_ms": 10694796.788
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "delete_value should return 0",
+          "detail": "",
+          "time_offset_ms": 10694796.806
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Query on deleted key must return None",
+          "detail": "",
+          "time_offset_ms": 10694796.819
+        }
+      ]
+    },
+    {
+      "subsystem": "Storage",
+      "module": "test_littlefs_kvstore",
+      "class": "TestLittleFSKVStore",
+      "name": "test_kvstore_set_and_get_value",
+      "description": "Verify basic Key-Value pair storage and immediate retrieval.",
+      "status": "PASS",
+      "duration_ms": 0.07420400106639136,
+      "memory_peak_bytes": 2155,
+      "assertions_total": 2,
+      "assertions_passed": 2,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "set_value should return 0 (Success)",
+          "detail": "",
+          "time_offset_ms": 10694796.917
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Retrieved value must match stored value",
+          "detail": "",
+          "time_offset_ms": 10694796.924
+        }
+      ]
+    },
+    {
+      "subsystem": "Storage",
+      "module": "test_littlefs_kvstore",
+      "class": "TestLittleFSKVStore",
+      "name": "test_littlefs_dir_and_unlink",
+      "description": "Verify directory creation, nesting, file removal (unlink), and dir deletion.",
+      "status": "PASS",
+      "duration_ms": 0.18258599993714597,
+      "memory_peak_bytes": 3526,
+      "assertions_total": 6,
+      "assertions_passed": 6,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694797.03
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694797.048
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "2 == 2",
+          "detail": "",
+          "time_offset_ms": 10694797.056
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694797.122
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Removing already deleted file must return LFS_ERR_NOENT",
+          "detail": "",
+          "time_offset_ms": 10694797.135
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694797.16
+        }
+      ]
+    },
+    {
+      "subsystem": "Storage",
+      "module": "test_littlefs_kvstore",
+      "class": "TestLittleFSKVStore",
+      "name": "test_littlefs_file_create_write_read",
+      "description": "Verify file creation, payload write, and readback integrity.",
+      "status": "PASS",
+      "duration_ms": 0.22447999981523026,
+      "memory_peak_bytes": 3608,
+      "assertions_total": 7,
+      "assertions_passed": 7,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694797.279
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Expected not None",
+          "detail": "",
+          "time_offset_ms": 10694797.287
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694797.306
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "36 == 36",
+          "detail": "",
+          "time_offset_ms": 10694797.313
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694797.338
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694797.349
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "Read data must exactly match written payload",
+          "detail": "",
+          "time_offset_ms": 10694797.424
+        }
+      ]
+    },
+    {
+      "subsystem": "Storage",
+      "module": "test_littlefs_kvstore",
+      "class": "TestLittleFSKVStore",
+      "name": "test_littlefs_file_seek_modes",
+      "description": "Verify SEEK_SET, SEEK_CUR, and SEEK_END positioning.",
+      "status": "PASS",
+      "duration_ms": 0.10942600056296214,
+      "memory_peak_bytes": 3567,
+      "assertions_total": 6,
+      "assertions_passed": 6,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "4 == 4",
+          "detail": "",
+          "time_offset_ms": 10694797.529
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "b'45' == b'45'",
+          "detail": "",
+          "time_offset_ms": 10694797.543
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "9 == 9",
+          "detail": "",
+          "time_offset_ms": 10694797.551
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "b'9A' == b'9A'",
+          "detail": "",
+          "time_offset_ms": 10694797.562
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "14 == 14",
+          "detail": "",
+          "time_offset_ms": 10694797.571
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "b'EF' == b'EF'",
+          "detail": "",
+          "time_offset_ms": 10694797.58
+        }
+      ]
+    },
+    {
+      "subsystem": "Storage",
+      "module": "test_littlefs_kvstore",
+      "class": "TestLittleFSKVStore",
+      "name": "test_littlefs_file_truncate_and_stat",
+      "description": "Verify file truncation and file metadata stat reporting.",
+      "status": "PASS",
+      "duration_ms": 0.0968409985944163,
+      "memory_peak_bytes": 3247,
+      "assertions_total": 5,
+      "assertions_passed": 5,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694797.689
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "1 == 1",
+          "detail": "",
+          "time_offset_ms": 10694797.701
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "100 == 100",
+          "detail": "",
+          "time_offset_ms": 10694797.706
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694797.715
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "File size must be 30 bytes after truncation",
+          "detail": "",
+          "time_offset_ms": 10694797.729
+        }
+      ]
+    },
+    {
+      "subsystem": "Storage",
+      "module": "test_littlefs_kvstore",
+      "class": "TestLittleFSKVStore",
+      "name": "test_littlefs_format_and_mount",
+      "description": "Verify format, mount, and unmount state transitions.",
+      "status": "PASS",
+      "duration_ms": 0.051577000704128295,
+      "memory_peak_bytes": 1767,
+      "assertions_total": 5,
+      "assertions_passed": 5,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Condition expected to be True",
+          "detail": "",
+          "time_offset_ms": 10694797.8
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694797.808
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Condition expected to be False",
+          "detail": "",
+          "time_offset_ms": 10694797.812
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694797.818
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Condition expected to be True",
+          "detail": "",
+          "time_offset_ms": 10694797.821
+        }
+      ]
+    },
+    {
+      "subsystem": "Storage",
+      "module": "test_littlefs_kvstore",
+      "class": "TestLittleFSKVStore",
+      "name": "test_littlefs_power_loss_atomicity",
+      "description": "Verify power-loss resilience simulation preserving previous atomic state.",
+      "status": "PASS",
+      "duration_ms": 0.09841599967330694,
+      "memory_peak_bytes": 2297,
+      "assertions_total": 1,
+      "assertions_passed": 1,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Power loss rollback should restore previous atomic state",
+          "detail": "",
+          "time_offset_ms": 10694797.966
+        }
+      ]
+    },
+    {
+      "subsystem": "HDF",
+      "module": "test_hdf_drivers",
+      "class": "TestHdfDrivers",
+      "name": "test_gpio_direction_configuration",
+      "description": "Verify GPIO pin direction set and get (IN vs OUT).",
+      "status": "PASS",
+      "duration_ms": 0.2960539986816002,
+      "memory_peak_bytes": 15670,
+      "assertions_total": 6,
+      "assertions_passed": 6,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694799.543
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "1 == 1",
+          "detail": "",
+          "time_offset_ms": 10694799.567
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694799.576
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694799.584
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "-2 == -2",
+          "detail": "",
+          "time_offset_ms": 10694799.592
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "-2 == -2",
+          "detail": "",
+          "time_offset_ms": 10694799.601
+        }
+      ]
+    },
+    {
+      "subsystem": "HDF",
+      "module": "test_hdf_drivers",
+      "class": "TestHdfDrivers",
+      "name": "test_gpio_interrupt_edge_triggers",
+      "description": "Verify rising and falling edge interrupt triggers and ISR execution.",
+      "status": "PASS",
+      "duration_ms": 0.1384090010105865,
+      "memory_peak_bytes": 13431,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Rising edge should trigger ISR",
+          "detail": "",
+          "time_offset_ms": 10694799.798
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "4 == 4",
+          "detail": "",
+          "time_offset_ms": 10694799.812
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Falling edge should NOT trigger rising ISR",
+          "detail": "",
+          "time_offset_ms": 10694799.82
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Disabled IRQ must not fire",
+          "detail": "",
+          "time_offset_ms": 10694799.828
+        }
+      ]
+    },
+    {
+      "subsystem": "HDF",
+      "module": "test_hdf_drivers",
+      "class": "TestHdfDrivers",
+      "name": "test_gpio_write_read_level",
+      "description": "Verify GPIO level write and read back.",
+      "status": "PASS",
+      "duration_ms": 0.1222159989993088,
+      "memory_peak_bytes": 13349,
+      "assertions_total": 5,
+      "assertions_passed": 5,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694799.974
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "1 == 1",
+          "detail": "",
+          "time_offset_ms": 10694799.987
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694799.996
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694800.005
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "-1 == -1",
+          "detail": "",
+          "time_offset_ms": 10694800.014
+        }
+      ]
+    },
+    {
+      "subsystem": "HDF",
+      "module": "test_hdf_drivers",
+      "class": "TestHdfDrivers",
+      "name": "test_hdf_device_manager_bind",
+      "description": "Verify HDF device manager driver registration, binding, and release.",
+      "status": "PASS",
+      "duration_ms": 0.16878400128916837,
+      "memory_peak_bytes": 15323,
+      "assertions_total": 7,
+      "assertions_passed": 7,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694800.16
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694800.178
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "'temp_sensor_01' in container",
+          "detail": "",
+          "time_offset_ms": 10694800.185
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "['BIND:temp_sensor_01', 'INIT:temp_sensor_01'] == ['BIND:temp_sensor_01', 'INIT:temp_sensor_01']",
+          "detail": "",
+          "time_offset_ms": 10694800.207
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694800.226
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "'temp_sensor_01' not in container",
+          "detail": "",
+          "time_offset_ms": 10694800.233
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "'RELEASE:temp_sensor_01' in container",
+          "detail": "",
+          "time_offset_ms": 10694800.238
+        }
+      ]
+    },
+    {
+      "subsystem": "HDF",
+      "module": "test_hdf_drivers",
+      "class": "TestHdfDrivers",
+      "name": "test_i2c_bus_read_write_transfer",
+      "description": "Verify I2C bus transfer: register writing and reading on slave device.",
+      "status": "PASS",
+      "duration_ms": 0.185313998372294,
+      "memory_peak_bytes": 12863,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694800.458
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694800.475
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "I2C readback must match register writes",
+          "detail": "",
+          "time_offset_ms": 10694800.48
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Non-existent slave address must return NACK/FAILURE",
+          "detail": "",
+          "time_offset_ms": 10694800.486
+        }
+      ]
+    },
+    {
+      "subsystem": "HDF",
+      "module": "test_hdf_drivers",
+      "class": "TestHdfDrivers",
+      "name": "test_spi_transfer_duplex",
+      "description": "Verify SPI master full-duplex transmission with CS assert/deassert.",
+      "status": "PASS",
+      "duration_ms": 0.2472260002832627,
+      "memory_peak_bytes": 12614,
+      "assertions_total": 3,
+      "assertions_passed": 3,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694800.78
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "4 == 4",
+          "detail": "",
+          "time_offset_ms": 10694800.789
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "CS line must be de-asserted after transfer",
+          "detail": "",
+          "time_offset_ms": 10694800.795
+        }
+      ]
+    },
+    {
+      "subsystem": "HDF",
+      "module": "test_hdf_drivers",
+      "class": "TestHdfDrivers",
+      "name": "test_uart_open_close_baudrate",
+      "description": "Verify UART opening, closing, and baud rate negotiation.",
+      "status": "PASS",
+      "duration_ms": 0.2000719996431144,
+      "memory_peak_bytes": 14683,
+      "assertions_total": 11,
+      "assertions_passed": 11,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694800.996
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Condition expected to be True",
+          "detail": "",
+          "time_offset_ms": 10694801.007
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694801.02
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "9600 == 9600",
+          "detail": "",
+          "time_offset_ms": 10694801.028
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694801.039
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "115200 == 115200",
+          "detail": "",
+          "time_offset_ms": 10694801.046
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694801.055
+        },
+        {
+          "assert_index": 8,
+          "passed": true,
+          "message": "921600 == 921600",
+          "detail": "",
+          "time_offset_ms": 10694801.061
+        },
+        {
+          "assert_index": 9,
+          "passed": true,
+          "message": "-2 == -2",
+          "detail": "",
+          "time_offset_ms": 10694801.071
+        },
+        {
+          "assert_index": 10,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694801.081
+        },
+        {
+          "assert_index": 11,
+          "passed": true,
+          "message": "Condition expected to be False",
+          "detail": "",
+          "time_offset_ms": 10694801.085
+        }
+      ]
+    },
+    {
+      "subsystem": "HDF",
+      "module": "test_hdf_drivers",
+      "class": "TestHdfDrivers",
+      "name": "test_uart_tx_rx_loopback",
+      "description": "Verify UART loopback data transmission and reception.",
+      "status": "PASS",
+      "duration_ms": 0.14743000065209344,
+      "memory_peak_bytes": 12736,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694801.259
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "9 == 9",
+          "detail": "",
+          "time_offset_ms": 10694801.268
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694801.29
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "UART Rx payload must match Tx payload",
+          "detail": "",
+          "time_offset_ms": 10694801.294
+        }
+      ]
+    },
+    {
+      "subsystem": "HDF",
+      "module": "test_hdf_drivers",
+      "class": "TestHdfDrivers",
+      "name": "test_watchdog_feed_mechanism",
+      "description": "Verify Watchdog feed prevents timeout, and starved watchdog expires.",
+      "status": "PASS",
+      "duration_ms": 0.12812899876735173,
+      "memory_peak_bytes": 12677,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694801.447
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Condition expected to be False",
+          "detail": "",
+          "time_offset_ms": 10694801.462
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Starved watchdog must expire",
+          "detail": "",
+          "time_offset_ms": 10694801.471
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "1 > 0",
+          "detail": "",
+          "time_offset_ms": 10694801.48
+        }
+      ]
+    },
+    {
+      "subsystem": "HDF",
+      "module": "test_hdf_drivers",
+      "class": "TestHdfDrivers",
+      "name": "test_watchdog_timeout_config",
+      "description": "Verify Watchdog timer lifecycle: start, configuration, stop.",
+      "status": "PASS",
+      "duration_ms": 0.13432299965643324,
+      "memory_peak_bytes": 12873,
+      "assertions_total": 5,
+      "assertions_passed": 5,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694801.634
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Condition expected to be True",
+          "detail": "",
+          "time_offset_ms": 10694801.64
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "3.0 == 3.0",
+          "detail": "",
+          "time_offset_ms": 10694801.651
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694801.661
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Condition expected to be False",
+          "detail": "",
+          "time_offset_ms": 10694801.666
+        }
+      ]
+    },
+    {
+      "subsystem": "Communication",
+      "module": "test_communication_wifi",
+      "class": "TestCommunicationWifi",
+      "name": "test_dhcp_client_ip_assignment",
+      "description": "Verify DHCP client lease and network gateway configuration.",
+      "status": "PASS",
+      "duration_ms": 0.11650099986582063,
+      "memory_peak_bytes": 3577,
+      "assertions_total": 7,
+      "assertions_passed": 7,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "'ip' in container",
+          "detail": "",
+          "time_offset_ms": 10694809.068
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "'netmask' in container",
+          "detail": "",
+          "time_offset_ms": 10694809.082
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "'gateway' in container",
+          "detail": "",
+          "time_offset_ms": 10694809.085
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "'dns' in container",
+          "detail": "",
+          "time_offset_ms": 10694809.088
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "IPv4 address must have 4 octets",
+          "detail": "",
+          "time_offset_ms": 10694809.097
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "192.168.1.1 == 192.168.1.1",
+          "detail": "",
+          "time_offset_ms": 10694809.104
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "255.255.255.0 == 255.255.255.0",
+          "detail": "",
+          "time_offset_ms": 10694809.108
+        }
+      ]
+    },
+    {
+      "subsystem": "Communication",
+      "module": "test_communication_wifi",
+      "class": "TestCommunicationWifi",
+      "name": "test_netif_link_state_events",
+      "description": "Verify network interface state notification callbacks.",
+      "status": "PASS",
+      "duration_ms": 0.04982800055586267,
+      "memory_peak_bytes": 2400,
+      "assertions_total": 1,
+      "assertions_passed": 1,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Link listener should receive UP and DOWN events sequentially",
+          "detail": "",
+          "time_offset_ms": 10694809.211
+        }
+      ]
+    },
+    {
+      "subsystem": "Communication",
+      "module": "test_communication_wifi",
+      "class": "TestCommunicationWifi",
+      "name": "test_socket_nonblocking_and_timeout",
+      "description": "Verify socket timeout handling.",
+      "status": "PASS",
+      "duration_ms": 10.52901799994288,
+      "memory_peak_bytes": 1826,
+      "assertions_total": 1,
+      "assertions_passed": 1,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Socket recv on empty buffer must timeout",
+          "detail": "",
+          "time_offset_ms": 10694819.745
+        }
+      ]
+    },
+    {
+      "subsystem": "Communication",
+      "module": "test_communication_wifi",
+      "class": "TestCommunicationWifi",
+      "name": "test_tcp_socket_loopback",
+      "description": "Verify LwIP TCP socket stream communication over loopback.",
+      "status": "PASS",
+      "duration_ms": 0.4346369987615617,
+      "memory_peak_bytes": 1873,
+      "assertions_total": 2,
+      "assertions_passed": 2,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Server must receive exact TCP payload",
+          "detail": "",
+          "time_offset_ms": 10694820.235
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Client must receive exact TCP response",
+          "detail": "",
+          "time_offset_ms": 10694820.261
+        }
+      ]
+    },
+    {
+      "subsystem": "Communication",
+      "module": "test_communication_wifi",
+      "class": "TestCommunicationWifi",
+      "name": "test_tcp_socket_throughput_stream",
+      "description": "Verify large streaming transfer over TCP socket (32 KB payload).",
+      "status": "PASS",
+      "duration_ms": 0.2807420005410677,
+      "memory_peak_bytes": 42603,
+      "assertions_total": 1,
+      "assertions_passed": 1,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "All 32KB must be transferred without loss",
+          "detail": "",
+          "time_offset_ms": 10694820.646
+        }
+      ]
+    },
+    {
+      "subsystem": "Communication",
+      "module": "test_communication_wifi",
+      "class": "TestCommunicationWifi",
+      "name": "test_udp_socket_datagram_exchange",
+      "description": "Verify UDP socket datagram exchange.",
+      "status": "PASS",
+      "duration_ms": 0.19456199879641645,
+      "memory_peak_bytes": 2459,
+      "assertions_total": 2,
+      "assertions_passed": 2,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "UDP datagram payload must match exactly",
+          "detail": "",
+          "time_offset_ms": 10694820.907
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "127.0.0.1 == 127.0.0.1",
+          "detail": "",
+          "time_offset_ms": 10694820.914
+        }
+      ]
+    },
+    {
+      "subsystem": "Communication",
+      "module": "test_communication_wifi",
+      "class": "TestCommunicationWifi",
+      "name": "test_wifi_enable_disable",
+      "description": "Verify WiFi subsystem enable, disable, and status transitions.",
+      "status": "PASS",
+      "duration_ms": 0.05779399907623883,
+      "memory_peak_bytes": 2254,
+      "assertions_total": 5,
+      "assertions_passed": 5,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Condition expected to be False",
+          "detail": "",
+          "time_offset_ms": 10694820.997
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694821.008
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Condition expected to be True",
+          "detail": "",
+          "time_offset_ms": 10694821.012
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694821.019
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Condition expected to be False",
+          "detail": "",
+          "time_offset_ms": 10694821.029
+        }
+      ]
+    },
+    {
+      "subsystem": "Communication",
+      "module": "test_communication_wifi",
+      "class": "TestCommunicationWifi",
+      "name": "test_wifi_scan_surrounding_aps",
+      "description": "Verify scanning surrounding access points and RSSI ordering.",
+      "status": "PASS",
+      "duration_ms": 0.07686599929002114,
+      "memory_peak_bytes": 2395,
+      "assertions_total": 5,
+      "assertions_passed": 5,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694821.101
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Should detect at least 1 AP",
+          "detail": "",
+          "time_offset_ms": 10694821.119
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Scan list must be sorted by signal strength",
+          "detail": "",
+          "time_offset_ms": 10694821.129
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "'ESP32' in container",
+          "detail": "",
+          "time_offset_ms": 10694821.136
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "1 in container",
+          "detail": "",
+          "time_offset_ms": 10694821.145
+        }
+      ]
+    },
+    {
+      "subsystem": "Communication",
+      "module": "test_communication_wifi",
+      "class": "TestCommunicationWifi",
+      "name": "test_wifi_softap_mode_and_stations",
+      "description": "Verify SoftAP hotspot mode configuration and connected station tracking.",
+      "status": "PASS",
+      "duration_ms": 0.09027700070873834,
+      "memory_peak_bytes": 3235,
+      "assertions_total": 7,
+      "assertions_passed": 7,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694821.223
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Condition expected to be True",
+          "detail": "",
+          "time_offset_ms": 10694821.228
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "1 == 1",
+          "detail": "",
+          "time_offset_ms": 10694821.249
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "AA:BB:CC:DD:EE:01 == AA:BB:CC:DD:EE:01",
+          "detail": "",
+          "time_offset_ms": 10694821.253
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694821.263
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "Condition expected to be False",
+          "detail": "",
+          "time_offset_ms": 10694821.267
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694821.275
+        }
+      ]
+    },
+    {
+      "subsystem": "Communication",
+      "module": "test_communication_wifi",
+      "class": "TestCommunicationWifi",
+      "name": "test_wifi_station_connect_disconnect",
+      "description": "Verify Station mode connects to AP and disconnects properly.",
+      "status": "PASS",
+      "duration_ms": 0.11507700037327595,
+      "memory_peak_bytes": 3211,
+      "assertions_total": 8,
+      "assertions_passed": 8,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694821.354
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "UP == UP",
+          "detail": "",
+          "time_offset_ms": 10694821.363
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "ESP32_Test_Lab == ESP32_Test_Lab",
+          "detail": "",
+          "time_offset_ms": 10694821.379
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "192.168.1.108 == 192.168.1.108",
+          "detail": "",
+          "time_offset_ms": 10694821.385
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "RSSI should be negative dBm",
+          "detail": "",
+          "time_offset_ms": 10694821.392
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694821.41
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "DOWN == DOWN",
+          "detail": "",
+          "time_offset_ms": 10694821.419
+        },
+        {
+          "assert_index": 8,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10694821.428
+        }
+      ]
+    },
+    {
+      "subsystem": "HUKS",
+      "module": "test_huks_security",
+      "class": "TestHuksSecurity",
+      "name": "test_huks_aes_cbc_encrypt_decrypt",
+      "description": "Verify AES-128-CBC encryption and decryption with PKCS7 padding.",
+      "status": "PASS",
+      "duration_ms": 383.6527469993598,
+      "memory_peak_bytes": 3815209,
+      "assertions_total": 5,
+      "assertions_passed": 5,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695210.266
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "b'Q,\\xd6\\x8b\\xa9p\\xf2J\\x95\\xcd\\xe1C\\xeda8\\x9e\\x03_\\x1a\\x89\\xdcF\\x07G;\\xe90\\x0c\\xaf\\xb0\\xe3\\xea\\xba;*\\x15up4\\xe4[!\\x8b\\x92\\x83-\\xe2;\\x9dhl<2Sk\\x18\\xdb\\xa1\\t\\xd2\\xdf\\x08m\\x96' != b'OpenHarmony ESP32 AES-CBC Confidential Test Payload!'",
+          "detail": "",
+          "time_offset_ms": 10695210.284
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "AES-CBC ciphertext length must be multiple of 16",
+          "detail": "",
+          "time_offset_ms": 10695210.288
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695210.481
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Decrypted text must match original plaintext",
+          "detail": "",
+          "time_offset_ms": 10695210.485
+        }
+      ]
+    },
+    {
+      "subsystem": "HUKS",
+      "module": "test_huks_security",
+      "class": "TestHuksSecurity",
+      "name": "test_huks_aes_gcm_auth_encryption",
+      "description": "Verify AES-256-GCM authenticated encryption and valid tag verification.",
+      "status": "PASS",
+      "duration_ms": 0.6447720006690361,
+      "memory_peak_bytes": 5464,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695215.269
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "GCM authentication tag must be 16 bytes",
+          "detail": "",
+          "time_offset_ms": 10695215.279
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695215.451
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "b'Secure Authenticated Firmware Packet #99' == b'Secure Authenticated Firmware Packet #99'",
+          "detail": "",
+          "time_offset_ms": 10695215.46
+        }
+      ]
+    },
+    {
+      "subsystem": "HUKS",
+      "module": "test_huks_security",
+      "class": "TestHuksSecurity",
+      "name": "test_huks_aes_gcm_tamper_detection",
+      "description": "Verify AES-256-GCM detects any ciphertext or tag tampering.",
+      "status": "PASS",
+      "duration_ms": 0.29356499908317346,
+      "memory_peak_bytes": 4940,
+      "assertions_total": 1,
+      "assertions_passed": 1,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Tampered ciphertext must fail tag verification",
+          "detail": "",
+          "time_offset_ms": 10695215.809
+        }
+      ]
+    },
+    {
+      "subsystem": "HUKS",
+      "module": "test_huks_security",
+      "class": "TestHuksSecurity",
+      "name": "test_huks_delete_key",
+      "description": "Verify key deletion from secure storage.",
+      "status": "PASS",
+      "duration_ms": 0.055577000239281915,
+      "memory_peak_bytes": 1431,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695215.889
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695215.9
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "-3 == -3",
+          "detail": "",
+          "time_offset_ms": 10695215.907
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Deleting missing key must fail",
+          "detail": "",
+          "time_offset_ms": 10695215.913
+        }
+      ]
+    },
+    {
+      "subsystem": "HUKS",
+      "module": "test_huks_security",
+      "class": "TestHuksSecurity",
+      "name": "test_huks_generate_aes_keys",
+      "description": "Verify generation of AES-128 and AES-256 cryptographic keys.",
+      "status": "PASS",
+      "duration_ms": 0.0659990000713151,
+      "memory_peak_bytes": 2778,
+      "assertions_total": 6,
+      "assertions_passed": 6,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695215.979
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695215.988
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "16 == 16",
+          "detail": "",
+          "time_offset_ms": 10695215.994
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695216.005
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695216.011
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "32 == 32",
+          "detail": "",
+          "time_offset_ms": 10695216.016
+        }
+      ]
+    },
+    {
+      "subsystem": "HUKS",
+      "module": "test_huks_security",
+      "class": "TestHuksSecurity",
+      "name": "test_huks_generate_hmac_keys",
+      "description": "Verify generation of HMAC keys and MAC operation.",
+      "status": "PASS",
+      "duration_ms": 0.2206760000262875,
+      "memory_peak_bytes": 2135,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695216.094
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695216.111
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695216.267
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "HMAC-SHA256 output must be 32 bytes",
+          "detail": "",
+          "time_offset_ms": 10695216.273
+        }
+      ]
+    },
+    {
+      "subsystem": "HUKS",
+      "module": "test_huks_security",
+      "class": "TestHuksSecurity",
+      "name": "test_huks_init_and_refresh",
+      "description": "Verify HUKS subsystem initialization and key info refresh.",
+      "status": "PASS",
+      "duration_ms": 0.06914000005053822,
+      "memory_peak_bytes": 1030,
+      "assertions_total": 3,
+      "assertions_passed": 3,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Condition expected to be True",
+          "detail": "",
+          "time_offset_ms": 10695216.37
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695216.388
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695216.405
+        }
+      ]
+    },
+    {
+      "subsystem": "HUKS",
+      "module": "test_huks_security",
+      "class": "TestHuksSecurity",
+      "name": "test_huks_key_storage_isolation",
+      "description": "Verify key alias isolation and storage uniqueness.",
+      "status": "PASS",
+      "duration_ms": 0.04658899888454471,
+      "memory_peak_bytes": 1683,
+      "assertions_total": 2,
+      "assertions_passed": 2,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "2 == 2",
+          "detail": "",
+          "time_offset_ms": 10695216.498
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Keys generated under different aliases must be distinct",
+          "detail": "",
+          "time_offset_ms": 10695216.504
+        }
+      ]
+    },
+    {
+      "subsystem": "HUKS",
+      "module": "test_huks_security",
+      "class": "TestHuksSecurity",
+      "name": "test_huks_sha256_digest_nist_vectors",
+      "description": "Verify SHA-256 digest calculation matches NIST Cavp test vectors.",
+      "status": "PASS",
+      "duration_ms": 0.06769399988115765,
+      "memory_peak_bytes": 1113,
+      "assertions_total": 2,
+      "assertions_passed": 2,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695216.596
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "SHA256 must match NIST test vector",
+          "detail": "",
+          "time_offset_ms": 10695216.606
+        }
+      ]
+    },
+    {
+      "subsystem": "HUKS",
+      "module": "test_huks_security",
+      "class": "TestHuksSecurity",
+      "name": "test_huks_three_stage_crypto_flow",
+      "description": "Verify multi-segment streaming update into finish.",
+      "status": "PASS",
+      "duration_ms": 0.10781700075312983,
+      "memory_peak_bytes": 1998,
+      "assertions_total": 5,
+      "assertions_passed": 5,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695216.708
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695216.724
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695216.732
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695216.751
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "32 == 32",
+          "detail": "",
+          "time_offset_ms": 10695216.764
+        }
+      ]
+    },
+    {
+      "subsystem": "DFX",
+      "module": "test_hilog_dfx",
+      "class": "TestHiLogDfx",
+      "name": "test_hilog_domain_and_tag_routing",
+      "description": "Verify log filtering by subsystem Domain and Tag.",
+      "status": "PASS",
+      "duration_ms": 0.663421000353992,
+      "memory_peak_bytes": 3944,
+      "assertions_total": 3,
+      "assertions_passed": 3,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "1 == 1",
+          "detail": "",
+          "time_offset_ms": 10695218.231
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "TAG_A == TAG_A",
+          "detail": "",
+          "time_offset_ms": 10695218.243
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "4096 == 4096",
+          "detail": "",
+          "time_offset_ms": 10695218.252
+        }
+      ]
+    },
+    {
+      "subsystem": "DFX",
+      "module": "test_hilog_dfx",
+      "class": "TestHiLogDfx",
+      "name": "test_hilog_format_specifiers",
+      "description": "Verify format specifiers %s, %d, %x formatting.",
+      "status": "PASS",
+      "duration_ms": 0.06467300045187585,
+      "memory_peak_bytes": 1676,
+      "assertions_total": 2,
+      "assertions_passed": 2,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "1 == 1",
+          "detail": "",
+          "time_offset_ms": 10695218.39
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "'Code: 42, Hex: 0xFE, Device: ESP32' in container",
+          "detail": "",
+          "time_offset_ms": 10695218.399
+        }
+      ]
+    },
+    {
+      "subsystem": "DFX",
+      "module": "test_hilog_dfx",
+      "class": "TestHiLogDfx",
+      "name": "test_hilog_level_filtering",
+      "description": "Verify tiered logging output and minimum log level threshold filtering.",
+      "status": "PASS",
+      "duration_ms": 0.15027700101200026,
+      "memory_peak_bytes": 2933,
+      "assertions_total": 7,
+      "assertions_passed": 7,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Condition expected to be False",
+          "detail": "",
+          "time_offset_ms": 10695218.472
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Condition expected to be False",
+          "detail": "",
+          "time_offset_ms": 10695218.489
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "2 == 2",
+          "detail": "",
+          "time_offset_ms": 10695218.499
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695218.513
+        },
+        {
+          "assert_index": 5,
+          "passed": true,
+          "message": "Condition expected to be True",
+          "detail": "",
+          "time_offset_ms": 10695218.545
+        },
+        {
+          "assert_index": 6,
+          "passed": true,
+          "message": "Condition expected to be True",
+          "detail": "",
+          "time_offset_ms": 10695218.564
+        },
+        {
+          "assert_index": 7,
+          "passed": true,
+          "message": "2 == 2",
+          "detail": "",
+          "time_offset_ms": 10695218.577
+        }
+      ]
+    },
+    {
+      "subsystem": "DFX",
+      "module": "test_hilog_dfx",
+      "class": "TestHiLogDfx",
+      "name": "test_hilog_privacy_masking",
+      "description": "Verify privacy sensitive field masking with {private} annotations.",
+      "status": "PASS",
+      "duration_ms": 0.11307699969620444,
+      "memory_peak_bytes": 2014,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "1 == 1",
+          "detail": "",
+          "time_offset_ms": 10695218.728
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Sensitive password must not appear in log",
+          "detail": "",
+          "time_offset_ms": 10695218.738
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Private token must be masked as <private>",
+          "detail": "",
+          "time_offset_ms": 10695218.744
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "'status: OK' in container",
+          "detail": "",
+          "time_offset_ms": 10695218.75
+        }
+      ]
+    },
+    {
+      "subsystem": "DFX",
+      "module": "test_hilog_dfx",
+      "class": "TestHiLogDfx",
+      "name": "test_hilog_ring_buffer_storage",
+      "description": "Verify ring buffer capacity retention and FIFO eviction of oldest logs.",
+      "status": "PASS",
+      "duration_ms": 0.36158599868940655,
+      "memory_peak_bytes": 4704,
+      "assertions_total": 3,
+      "assertions_passed": 3,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Ring buffer size must not exceed capacity",
+          "detail": "",
+          "time_offset_ms": 10695219.146
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "Oldest surviving log should be entry #5",
+          "detail": "",
+          "time_offset_ms": 10695219.155
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "Latest log should be entry #14",
+          "detail": "",
+          "time_offset_ms": 10695219.161
+        }
+      ]
+    },
+    {
+      "subsystem": "DFX",
+      "module": "test_hilog_dfx",
+      "class": "TestHiLogDfx",
+      "name": "test_syspara_chip_serial_number",
+      "description": "Verify unique chip serial number formatting.",
+      "status": "PASS",
+      "duration_ms": 0.04654599979403429,
+      "memory_peak_bytes": 1016,
+      "assertions_total": 2,
+      "assertions_passed": 2,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "Serial must follow ESP32- UID convention",
+          "detail": "",
+          "time_offset_ms": 10695219.248
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "18 > 10",
+          "detail": "",
+          "time_offset_ms": 10695219.261
+        }
+      ]
+    },
+    {
+      "subsystem": "DFX",
+      "module": "test_hilog_dfx",
+      "class": "TestHiLogDfx",
+      "name": "test_syspara_device_identification",
+      "description": "Verify syspara device classification, manufacture, and brand.",
+      "status": "PASS",
+      "duration_ms": 0.053282999942894094,
+      "memory_peak_bytes": 1516,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "smartDevice == smartDevice",
+          "detail": "",
+          "time_offset_ms": 10695219.349
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "'Espressif' in container",
+          "detail": "",
+          "time_offset_ms": 10695219.359
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "OpenHarmony == OpenHarmony",
+          "detail": "",
+          "time_offset_ms": 10695219.367
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "'ESP32' in container",
+          "detail": "",
+          "time_offset_ms": 10695219.373
+        }
+      ]
+    },
+    {
+      "subsystem": "DFX",
+      "module": "test_hilog_dfx",
+      "class": "TestHiLogDfx",
+      "name": "test_syspara_hardware_and_software_models",
+      "description": "Verify hardware chipset model, product model, and OpenHarmony OS version.",
+      "status": "PASS",
+      "duration_ms": 0.049512000259710476,
+      "memory_peak_bytes": 1321,
+      "assertions_total": 3,
+      "assertions_passed": 3,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "ESP32-WROOM-32D == ESP32-WROOM-32D",
+          "detail": "",
+          "time_offset_ms": 10695219.447
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "'ESP32' in container",
+          "detail": "",
+          "time_offset_ms": 10695219.458
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "'OpenHarmony 4.1.0' in container",
+          "detail": "",
+          "time_offset_ms": 10695219.466
+        }
+      ]
+    },
+    {
+      "subsystem": "DFX",
+      "module": "test_hilog_dfx",
+      "class": "TestHiLogDfx",
+      "name": "test_syspara_query_buffer_safety",
+      "description": "Verify parameter query bounds checking, missing key and small buffer handling.",
+      "status": "PASS",
+      "duration_ms": 0.0685519989929162,
+      "memory_peak_bytes": 1483,
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "0 == 0",
+          "detail": "",
+          "time_offset_ms": 10695219.542
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "ESP32-WROOM-32D == ESP32-WROOM-32D",
+          "detail": "",
+          "time_offset_ms": 10695219.549
+        },
+        {
+          "assert_index": 3,
+          "passed": true,
+          "message": "-2 == -2",
+          "detail": "",
+          "time_offset_ms": 10695219.56
+        },
+        {
+          "assert_index": 4,
+          "passed": true,
+          "message": "Insufficient buffer length must return -3",
+          "detail": "",
+          "time_offset_ms": 10695219.575
+        }
+      ]
+    },
+    {
+      "subsystem": "DFX",
+      "module": "test_hilog_dfx",
+      "class": "TestHiLogDfx",
+      "name": "test_syspara_sdk_api_version",
+      "description": "Verify OpenHarmony SDK API version compliance for Mini System.",
+      "status": "PASS",
+      "duration_ms": 0.03359199945407454,
+      "memory_peak_bytes": 952,
+      "assertions_total": 2,
+      "assertions_passed": 2,
+      "assertions_failed": 0,
+      "error_message": "",
+      "records": [
+        {
+          "assert_index": 1,
+          "passed": true,
+          "message": "OpenHarmony 4.x must have API level >= 10",
+          "detail": "",
+          "time_offset_ms": 10695219.647
+        },
+        {
+          "assert_index": 2,
+          "passed": true,
+          "message": "OpenHarmony 4.1.0 corresponds to API version 11",
+          "detail": "",
+          "time_offset_ms": 10695219.653
+        }
+      ]
+    }
+  ]
+}
