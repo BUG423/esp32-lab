@@ -1,0 +1,18 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "hub75.c"
+        "clock_face.c"
+        "ds3231.c"
+        "time_service.c"
+    INCLUDE_DIRS
+        "."
+    REQUIRES
+        esp_driver_gpio
+        esp_driver_i2c
+        esp_event
+        esp_netif
+        esp_wifi
+        lwip
+        nvs_flash
+)

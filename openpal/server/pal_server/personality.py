@@ -10,7 +10,6 @@ changes:
 
 from __future__ import annotations
 
-import random
 import time
 from dataclasses import dataclass, field
 
@@ -60,6 +59,7 @@ class PersonalityEngine:
         self.name = name
         self.style = style
         self.mood = MoodState()
+        self.activity_state = "idle"
         self.turn_count = 0
 
     # ---- public API ----
@@ -80,10 +80,15 @@ class PersonalityEngine:
             self.mood.arousal *= 0.9
 
     def set_state(self, state: str) -> None:
-        """listening / thinking / speaking override for device UI."""
-        if state in ("listening", "thinking", "speaking"):
-            self.mood.emotion = state
-            self.mood.updated_at = time.time()
+        """Update device activity without destroying the affective mood."""
+        if state in ("idle", "listening", "transcribing", "thinking", "speaking"):
+            self.activity_state = state
+
+    def reset(self) -> None:
+        """Reset the full affective state, not just its label."""
+        self.mood = MoodState()
+        self.activity_state = "idle"
+        self.turn_count = 0
 
     def system_prompt(self) -> str:
         m = self.mood.as_dict()
@@ -93,7 +98,6 @@ class PersonalityEngine:
             "sad": "用户可能情绪低落，请温柔体贴、简短陪伴。",
             "calm": "现在氛围安静，回答尽量轻柔简洁。",
             "curious": "用户在提问，请清晰有条理地解释。",
-            "thinking": "保持专注，给出条理清晰的回答。",
         }.get(m["emotion"], "")
         return (
             f"你是{self.name}，一个桌面 AI 伙伴。\n"
@@ -115,7 +119,7 @@ class PersonalityEngine:
         }
 
     def device_payload(self) -> dict:
-        return self.mood.as_dict()
+        return {**self.mood.as_dict(), "activity": self.activity_state}
 
     # ---- internals ----
 

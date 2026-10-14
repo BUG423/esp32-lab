@@ -16,9 +16,10 @@ menu "OpenPal Configuration"
 
     config OPENPAL_PTT_GPIO
         int "Push-to-talk button GPIO"
-        default 0
+        default 4
         help
             GPIO number of the PTT button (active low, internal pull-up).
+            GPIO0 is intentionally avoided because it is a boot strap pin.
 
     config OPENPAL_LED_GPIO
         int "Status LED GPIO"
@@ -26,8 +27,72 @@ menu "OpenPal Configuration"
         help
             Onboard status LED GPIO.
 
-    config OPENPAL_SAMPLE_RATE
-        int "Audio sample rate (Hz)"
+    config OPENPAL_INPUT_SAMPLE_RATE
+        int "Microphone sample rate (Hz)"
         default 16000
+
+    config OPENPAL_OUTPUT_SAMPLE_RATE
+        int "Initial speaker sample rate (Hz)"
+        default 24000
+        help
+            The server announces the real rate for every reply and the
+            firmware reconfigures the TX clock when needed.
+
+    config OPENPAL_MAX_UTTERANCE_SECONDS
+        int "Maximum push-to-talk duration (seconds)"
+        range 3 60
+        default 15
+
+    menu "INMP441 microphone (I2S1 RX)"
+        config OPENPAL_MIC_BCLK_GPIO
+            int "BCLK GPIO"
+            default 14
+
+        config OPENPAL_MIC_WS_GPIO
+            int "WS/LRCL GPIO"
+            default 15
+
+        config OPENPAL_MIC_DIN_GPIO
+            int "SD/DIN GPIO"
+            default 32
+
+        choice OPENPAL_MIC_CHANNEL
+            prompt "INMP441 L/R channel"
+            default OPENPAL_MIC_CHANNEL_LEFT
+
+            config OPENPAL_MIC_CHANNEL_LEFT
+                bool "Left (L/R pin tied to GND)"
+
+            config OPENPAL_MIC_CHANNEL_RIGHT
+                bool "Right (L/R pin tied to 3V3)"
+        endchoice
+
+        config OPENPAL_MIC_SHIFT
+            int "32-bit microphone to PCM16 right shift"
+            range 8 20
+            default 14
+            help
+                INMP441 carries 24-bit samples in 32-bit I2S slots. Increase
+                this value if input clips; decrease it if input is too quiet.
+    endmenu
+
+    menu "MAX98357A speaker (I2S0 TX)"
+        config OPENPAL_SPK_BCLK_GPIO
+            int "BCLK GPIO"
+            default 26
+
+        config OPENPAL_SPK_WS_GPIO
+            int "LRC/WS GPIO"
+            default 25
+
+        config OPENPAL_SPK_DOUT_GPIO
+            int "DIN/DOUT GPIO"
+            default 22
+
+        config OPENPAL_PLAYBACK_BUFFER_BYTES
+            int "Playback stream buffer (bytes)"
+            range 8192 65536
+            default 32768
+    endmenu
 
 endmenu

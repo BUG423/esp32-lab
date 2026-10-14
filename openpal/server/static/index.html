@@ -38,6 +38,7 @@
     transition:all .35s ease;display:grid;place-items:center;font-size:34px}
   .orb.live .core{box-shadow:0 0 50px var(--glow,#2ee6a8);transform:scale(1.05)}
   .orb.listening .core{box-shadow:0 0 42px #2ee6a8aa}
+  .orb.transcribing .core{box-shadow:0 0 42px #ffc857aa;animation:pulse 1s ease-in-out infinite}
   .orb.thinking .core{box-shadow:0 0 42px #b388ffaa;animation:pulse 1.2s ease-in-out infinite}
   .orb.speaking .core{box-shadow:0 0 42px #5b8cffaa;animation:pulse 0.8s ease-in-out infinite}
   @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
@@ -108,7 +109,7 @@
         <button class="primary" id="btnSend">发送</button>
       </div>
       <div class="row">
-        <button id="btnMic">🎙️ 按住说话</button>
+        <button id="btnMic">🎙️ 点击开始说话</button>
         <button id="btnInterrupt">✋ 打断</button>
         <button class="danger" id="btnClear">清空</button>
       </div>
@@ -116,8 +117,8 @@
         <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
       </div>
       <div class="note">
-        <b>浏览器语音模式：</b>不用买硬件，直接用电脑麦克风体验完整语音闭环。
-        有 ESP32 时，同一协议可接入真机。
+        <b>浏览器语音模式：</b>配置 ASR 后可点击录音；未配置时文字聊天仍可使用。
+        浏览器与 ESP32 使用同一套流式协议。
       </div>
     </section>
 
@@ -156,26 +157,20 @@
 
 <script>
 const $ = id => document.getElementById(id);
-let ws, audioCtx, mediaStream, procNode, playbackCtx;
-let recording = false;
+let ws, reconnectTimer, audioCtx, mediaStream, procNode, silentGain;
+let playbackCtx, playbackSource, playbackToken = 0;
+let recording = false, micStarting = false, recordTimer = 0;
+let asrReady = false, inputRate = 16000, maxUtteranceMs = 15000;
+let replyAudio = null;
 
-// ---------- UI helpers ----------
+function escapeHtml(text){
+  return String(text).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+}
+
 function addMsg(role, text){
   const div = document.createElement('div');
   div.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
-  div.innerHTML = `<div class="who">${role === 'user' ? '你' : '小帕'}</div>` +
-    text.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-  $('chat').appendChild(div);
-  $('chat').scrollTop = $('chat').scrollHeight;
-}
-
-function addToolMsg(name, args, result){
-  const div = document.createElement('div');
-  div.className = 'msg bot';
-  const brief = JSON.stringify(result ?? {});
-  div.innerHTML = `<div class="who">🔧 工具 · ${name}</div>` +
-    `<code style="font-size:12px;opacity:.85">${name}(${JSON.stringify(args||{})})</code><br>` +
-    brief.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+  div.innerHTML = `<div class="who">${role === 'user' ? '你' : role === 'system' ? '系统' : '小帕'}</div>${escapeHtml(text)}`;
   $('chat').appendChild(div);
   $('chat').scrollTop = $('chat').scrollHeight;
 }
@@ -184,7 +179,7 @@ function flashLed(color){
   const orb = $('orb');
   orb.style.setProperty('--glow', color);
   orb.classList.add('live');
-  setTimeout(()=>orb.classList.remove('live'), 600);
+  setTimeout(() => orb.classList.remove('live'), 600);
 }
 
 function setEmotion(e){
@@ -192,160 +187,245 @@ function setEmotion(e){
   $('orbEmoji').textContent = e.emoji || '🙂';
   $('orb').style.setProperty('--glow', e.color || '#2ee6a8');
   $('emotionText').textContent = (e.emotion || 'neutral') + ' · ' + (e.emoji || '');
-  $('valence').textContent = (e.valence ?? 0.5).toFixed(2);
-  $('arousal').textContent = (e.arousal ?? 0.4).toFixed(2);
+  $('valence').textContent = Number(e.valence ?? 0.5).toFixed(2);
+  $('arousal').textContent = Number(e.arousal ?? 0.4).toFixed(2);
 }
 
-function setState(s){
+function setState(state){
   const orb = $('orb');
-  orb.classList.remove('listening','thinking','speaking');
-  const map = {listening:'🎧 倾听中', thinking:'💭 思考中', speaking:'🗣️ 说话中'};
-  $('stateText').textContent = map[s] || s || '—';
-  if(s && map[s]) orb.classList.add(s);
+  orb.classList.remove('listening','transcribing','thinking','speaking');
+  const names = {
+    listening:'🎧 倾听中', transcribing:'📝 识别中',
+    thinking:'💭 思考中', speaking:'🗣️ 说话中'
+  };
+  $('stateText').textContent = names[state] || state || '—';
+  if(names[state]) orb.classList.add(state);
 }
 
-// ---------- WebSocket ----------
+function send(data){
+  if(ws && ws.readyState === WebSocket.OPEN){
+    ws.send(typeof data === 'string' || data instanceof ArrayBuffer ? data : JSON.stringify(data));
+    return true;
+  }
+  return false;
+}
+
 function connect(){
+  clearTimeout(reconnectTimer);
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  ws = new WebSocket(proto + '://' + location.host + '/ws');
+  ws = new WebSocket(`${proto}://${location.host}/ws`);
   ws.binaryType = 'arraybuffer';
 
   ws.onopen = () => {
     $('conn').className = 'pill on';
     $('conn').textContent = 'live';
+    send({type:'hello', protocol:2, client:'browser'});
   };
   ws.onclose = () => {
     $('conn').className = 'pill off';
     $('conn').textContent = 'offline';
-    setTimeout(connect, 1500);
+    cleanupMic(false);
+    stopPlayback();
+    reconnectTimer = setTimeout(connect, 1500);
   };
   ws.onerror = () => ws.close();
+  ws.onmessage = event => {
+    if(event.data instanceof ArrayBuffer){
+      if(replyAudio) {
+        const chunk = new Uint8Array(event.data);
+        replyAudio.chunks.push(chunk);
+        replyAudio.received += chunk.byteLength;
+      }
+      return;
+    }
 
-  ws.onmessage = ev => {
-    if (ev.data instanceof ArrayBuffer) return;
-    let d; try { d = JSON.parse(ev.data); } catch { return; }
-
-    if(d.type === 'hello'){
-      $('llmPill').textContent = 'LLM ' + (d.llm_ready ? 'ready' : 'demo');
-      $('llmPill').className = 'pill ' + (d.llm_ready ? 'on' : '');
-      $('asrPill').textContent = 'ASR ' + (d.asr_ready ? 'ready' : 'text');
-      $('asrPill').className = 'pill ' + (d.asr_ready ? 'on' : '');
-      $('ttsPill').textContent = 'TTS ' + (d.tts_provider || '—');
-      $('ttsPill').className = 'pill on';
-      setEmotion(d.emotion);
+    let data;
+    try { data = JSON.parse(event.data); } catch { return; }
+    if(data.type === 'hello'){
+      if(data.protocol !== 2) addMsg('system', `协议版本不兼容：${data.protocol}`);
+      asrReady = Boolean(data.asr_ready);
+      inputRate = data.audio_up?.sample_rate || 16000;
+      maxUtteranceMs = data.max_utterance_ms || 15000;
+      $('btnMic').disabled = !asrReady;
+      $('btnMic').title = asrReady ? '' : '服务端未配置 ASR';
+      $('llmPill').textContent = 'LLM ' + (data.llm_ready ? 'ready' : 'demo');
+      $('llmPill').className = 'pill ' + (data.llm_ready ? 'on' : '');
+      $('asrPill').textContent = 'ASR ' + (asrReady ? 'ready' : 'off');
+      $('asrPill').className = 'pill ' + (asrReady ? 'on' : 'off');
+      $('ttsPill').textContent = 'TTS ' + (data.tts_ready ? data.tts_detail : 'off');
+      $('ttsPill').className = 'pill ' + (data.tts_ready ? 'on' : 'off');
+      setEmotion(data.emotion);
+    } else if(data.type === 'status'){
+      setState(data.state); setEmotion(data);
+    } else if(data.type === 'emotion'){
+      setEmotion(data);
+    } else if(data.type === 'transcript'){
+      addMsg(data.role, data.text);
+    } else if(data.type === 'tool'){
+      addMsg('system', `🔧 ${data.name}: ${JSON.stringify(data.result ?? {})}`);
+    } else if(data.type === 'device_cmd' && data.cmd === 'led'){
+      flashLed(data.color || '#2ee6a8');
+    } else if(data.type === 'reply_start'){
+      stopPlayback();
+      replyAudio = {rate:data.sample_rate || 24000, expected:data.audio_bytes || 0, received:0, chunks:[]};
+    } else if(data.type === 'reply_end'){
+      finishReply();
+    } else if(data.type === 'interrupted'){
+      replyAudio = null;
+      stopPlayback();
+    } else if(data.type === 'error'){
+      addMsg('system', data.message || data.code || '服务端错误');
     }
-    else if(d.type === 'status'){ setState(d.state); setEmotion(d); }
-    else if(d.type === 'emotion'){ setEmotion(d); }
-    else if(d.type === 'transcript'){ addMsg(d.role, d.text); }
-    else if(d.type === 'tool'){
-      addToolMsg(d.name, d.args, d.result);
-    }
-    else if(d.type === 'device_cmd'){
-      if(d.cmd === 'led') flashLed(d.color || '#2ee6a8');
-    }
-    else if(d.type === 'reply'){
-      if(d.audio_b64) playPcm(d.audio_b64, d.sample_rate || 24000);
-      else ws.send(JSON.stringify({type:'playback_done'}));
-    }
-    else if(d.type === 'interrupted'){ stopPlayback(); }
-    else if(d.type === 'pong'){ /* heartbeat */ }
   };
 }
 
-// ---------- audio playback ----------
-function playPcm(b64, rate){
+function finishReply(){
+  const reply = replyAudio;
+  replyAudio = null;
+  if(!reply || reply.expected === 0){ send({type:'playback_done'}); return; }
+  if(reply.received !== reply.expected){
+    addMsg('system', `音频不完整（${reply.received}/${reply.expected} bytes）`);
+    send({type:'playback_done'});
+    return;
+  }
+  const bytes = new Uint8Array(reply.received);
+  let offset = 0;
+  for(const chunk of reply.chunks){ bytes.set(chunk, offset); offset += chunk.byteLength; }
+  playPcm(bytes, reply.rate);
+}
+
+function playPcm(bytes, rate){
   try{
-    const bin = atob(b64);
-    const n = bin.length / 2;
-    const pcm = new Int16Array(n);
-    for(let i=0;i<n;i++){
-      const lo = bin.charCodeAt(i*2), hi = bin.charCodeAt(i*2+1);
-      pcm[i] = (hi << 8) | lo;
-    }
     playbackCtx = playbackCtx || new (window.AudioContext || window.webkitAudioContext)();
-    const buf = playbackCtx.createBuffer(1, n, rate);
-    const ch = buf.getChannelData(0);
-    for(let i=0;i<n;i++) ch[i] = pcm[i] / 32768;
-    const src = playbackCtx.createBufferSource();
-    src.buffer = buf;
-    src.connect(playbackCtx.destination);
-    src.onended = () => ws.send(JSON.stringify({type:'playback_done'}));
-    src.start();
-  }catch(e){
-    console.warn('play failed', e);
-    ws.send(JSON.stringify({type:'playback_done'}));
+    const samples = new Int16Array(bytes.buffer, bytes.byteOffset, Math.floor(bytes.byteLength / 2));
+    const buffer = playbackCtx.createBuffer(1, samples.length, rate);
+    const channel = buffer.getChannelData(0);
+    for(let i=0;i<samples.length;i++) channel[i] = samples[i] / 32768;
+    const token = ++playbackToken;
+    playbackSource = playbackCtx.createBufferSource();
+    playbackSource.buffer = buffer;
+    playbackSource.connect(playbackCtx.destination);
+    playbackSource.onended = () => {
+      if(token === playbackToken){ playbackSource = null; send({type:'playback_done'}); }
+    };
+    playbackSource.start();
+  }catch(error){
+    console.warn('playback failed', error);
+    send({type:'playback_done'});
   }
 }
-function stopPlayback(){ if(playbackCtx){ try{ playbackCtx.close(); }catch{} playbackCtx=null; } }
 
-// ---------- microphone capture ----------
+function stopPlayback(){
+  playbackToken++;
+  if(playbackSource){ try { playbackSource.stop(); playbackSource.disconnect(); } catch {} }
+  playbackSource = null;
+}
+
+function resample(input, fromRate, toRate){
+  if(fromRate === toRate) return input;
+  const ratio = fromRate / toRate;
+  const output = new Float32Array(Math.max(1, Math.floor(input.length / ratio)));
+  for(let i=0;i<output.length;i++){
+    const position = i * ratio;
+    const left = Math.floor(position);
+    const mix = position - left;
+    const a = input[Math.min(left, input.length - 1)];
+    const b = input[Math.min(left + 1, input.length - 1)];
+    output[i] = a + (b - a) * mix;
+  }
+  return output;
+}
+
+function floatToPcm16(floatSamples){
+  const pcm = new Int16Array(floatSamples.length);
+  for(let i=0;i<floatSamples.length;i++){
+    const sample = Math.max(-1, Math.min(1, floatSamples[i]));
+    pcm[i] = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
+  }
+  return pcm;
+}
+
 async function startMic(){
-  if(recording) return;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)({sampleRate:16000});
-  mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
-  const src = audioCtx.createMediaStreamSource(mediaStream);
-  procNode = audioCtx.createScriptProcessor(4096, 1, 1);
-  procNode.onaudioprocess = e => {
-    if(!recording || ws.readyState !== 1) return;
-    const f = e.inputBuffer.getChannelData(0);
-    const pcm = new Int16Array(f.length);
-    for(let i=0;i<f.length;i++){
-      let s = Math.max(-1, Math.min(1, f[i]));
-      pcm[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-    }
-    ws.send(pcm.buffer);
-  };
-  src.connect(procNode);
-  procNode.connect(audioCtx.destination); // keep processor alive
-  recording = true;
-  $('btnMic').textContent = '⏹️ 结束并识别';
-  $('wave').classList.add('on');
-  setState('listening');
+  if(recording || micStarting || !asrReady || !send({type:'interrupt'})) return;
+  micStarting = true;
+  $('btnMic').disabled = true;
+  stopPlayback();
+  try{
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      audio:{channelCount:1, echoCancellation:true, noiseSuppression:true}
+    });
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaStreamSource(mediaStream);
+    procNode = audioCtx.createScriptProcessor(2048, 1, 1);
+    silentGain = audioCtx.createGain();
+    silentGain.gain.value = 0;
+    procNode.onaudioprocess = event => {
+      if(!recording || !ws || ws.readyState !== WebSocket.OPEN) return;
+      const mono = event.inputBuffer.getChannelData(0);
+      const pcm = floatToPcm16(resample(mono, audioCtx.sampleRate, inputRate));
+      send(pcm.buffer);
+    };
+    source.connect(procNode);
+    procNode.connect(silentGain);
+    silentGain.connect(audioCtx.destination);
+    if(!send({type:'audio_start', format:'pcm_s16le', sample_rate:inputRate})) throw new Error('连接已断开');
+    recording = true;
+    micStarting = false;
+    $('btnMic').disabled = false;
+    $('btnMic').textContent = '⏹️ 点击结束并识别';
+    $('wave').classList.add('on');
+    recordTimer = setTimeout(() => stopMic(), Math.max(500, maxUtteranceMs - 250));
+  }catch(error){
+    cleanupMic(false);
+    addMsg('system', `无法使用麦克风：${error.message || error}`);
+  }
 }
 
-function stopMic(){
-  if(!recording) return;
+function cleanupMic(sendEnd){
+  const wasRecording = recording;
   recording = false;
-  $('btnMic').textContent = '🎙️ 按住说话';
+  micStarting = false;
+  clearTimeout(recordTimer);
+  $('btnMic').textContent = '🎙️ 点击开始说话';
   $('wave').classList.remove('on');
-  try{ procNode && procNode.disconnect(); mediaStream && mediaStream.getTracks().forEach(t=>t.stop()); audioCtx && audioCtx.close(); }catch{}
-  if(ws.readyState === 1) ws.send(JSON.stringify({type:'audio_end'}));
+  try { if(procNode) procNode.disconnect(); } catch {}
+  try { if(silentGain) silentGain.disconnect(); } catch {}
+  try { if(mediaStream) mediaStream.getTracks().forEach(track => track.stop()); } catch {}
+  try { if(audioCtx) audioCtx.close(); } catch {}
+  procNode = silentGain = mediaStream = audioCtx = null;
+  $('btnMic').disabled = !asrReady || !ws || ws.readyState !== WebSocket.OPEN;
+  if(sendEnd && wasRecording) send({type:'audio_end'});
 }
 
-// ---------- text chat ----------
-function say(text){
-  if(!text.trim()) return;
-  if(ws.readyState === 1) ws.send(JSON.stringify({type:'text', text}));
-}
+function stopMic(){ cleanupMic(true); }
+function say(text){ if(String(text).trim()) send({type:'text', text:String(text).trim()}); }
 
 $('btnSend').onclick = () => { say($('input').value); $('input').value=''; };
-$('input').addEventListener('keydown', e => {
-  if(e.key === 'Enter'){ say($('input').value); $('input').value=''; }
+$('input').addEventListener('keydown', event => {
+  if(event.key === 'Enter'){ say($('input').value); $('input').value=''; }
 });
 $('btnMic').onclick = () => recording ? stopMic() : startMic();
 $('btnInterrupt').onclick = () => {
-  stopPlayback();
-  if(ws.readyState === 1) ws.send(JSON.stringify({type:'interrupt'}));
+  cleanupMic(false); replyAudio = null; stopPlayback(); send({type:'interrupt'});
 };
 $('btnClear').onclick = () => { $('chat').innerHTML=''; };
-$('orb').onclick = () => {
-  if(ws.readyState === 1) ws.send(JSON.stringify({type:'recalibrate_mood'}));
-};
+$('orb').onclick = () => send({type:'recalibrate_mood'});
 
-// ---------- status poll ----------
 async function poll(){
   try{
-    const r = await fetch('/api/status');
-    const d = await r.json();
-    $('clients').textContent = d.clients ?? 0;
-    $('kvLlm').textContent = d.llm_ready ? d.llm_model : 'toy-brain demo（未配 API Key）';
-    $('kvAsr').textContent = d.asr_provider;
-    $('kvTts').textContent = d.tts_provider;
-  }catch{}
+    const response = await fetch('/api/status');
+    const data = await response.json();
+    $('clients').textContent = data.clients ?? 0;
+    $('kvLlm').textContent = data.llm_ready ? data.llm_model : 'toy-brain demo（未配 API Key）';
+    $('kvAsr').textContent = data.asr_ready ? data.asr_provider : `${data.asr_provider}（不可用）`;
+    $('kvTts').textContent = data.tts_ready ? data.tts_detail : `${data.tts_detail}（不可用）`;
+    $('kvVoice').textContent = data.asr_ready && data.tts_ready ? '双向可用' : '请按状态补齐依赖';
+  }catch {}
   setTimeout(poll, 4000);
 }
 
-connect(); poll();
+connect();
+poll();
 </script>
 </body>
 </html>

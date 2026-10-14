@@ -1,15 +1,13 @@
 """TTS adapters — edge-tts (free), OpenAI TTS, or silent.
 
-Returns PCM16 mono bytes at `settings.sample_rate_out`.
+Returns PCM16 mono bytes at `output_sample_rate()`.
 """
 
 from __future__ import annotations
 
 import asyncio
-import io
 import logging
-import struct
-import wave
+import shutil
 
 import httpx
 
@@ -18,25 +16,27 @@ from .config import settings
 log = logging.getLogger("pal.tts")
 
 
+def output_sample_rate() -> int:
+    """OpenAI raw PCM is fixed at 24 kHz; Edge is resampled by ffmpeg."""
+    return 24000 if settings.tts_provider == "openai" else settings.sample_rate_out
+
+
 async def synthesize(text: str, rate: str | None = None) -> bytes:
     if not text:
         return b""
     if settings.tts_provider == "silent":
         return b""
     if settings.tts_provider == "openai":
+        if not settings.tts_api_key:
+            log.warning("OpenAI TTS selected but PAL_TTS_API_KEY is empty")
+            return b""
         return await _tts_openai(text)
     return await _tts_edge(text, rate or settings.tts_rate)
 
 
 # ---------------------------------------------------------------------------
-# edge-tts (free, no key). Streams MP3 — we decode via a tiny built-in path
-# only if needed; for the wire we actually send MP3 and let clients handle it,
-# BUT ESP32 is happier with PCM. So we request raw PCM via edge's audio format
-# when possible, otherwise convert with a minimal WAV passthrough.
-#
-# edge-tts gives us MP3. To keep the firmware simple we convert MP3 -> PCM16
-# using `ffmpeg` if available, else we fall back to a short silence so the
-# conversation loop still works in silent environments.
+# edge-tts (free, no key) streams MP3. To keep both browser and firmware
+# clients simple, ffmpeg converts it to the protocol's PCM16 output format.
 # ---------------------------------------------------------------------------
 
 async def _tts_edge(text: str, rate: str) -> bytes:
@@ -65,7 +65,7 @@ async def _tts_edge(text: str, rate: str) -> bytes:
     mp3 = b"".join(chunks)
     if not mp3:
         return b""
-    return await _mp3_to_pcm16(mp3, settings.sample_rate_out)
+    return await _mp3_to_pcm16(mp3, output_sample_rate())
 
 
 async def _tts_openai(text: str) -> bytes:
@@ -73,12 +73,12 @@ async def _tts_openai(text: str) -> bytes:
     headers = {"Authorization": f"Bearer {settings.tts_api_key}"}
     payload = {
         "model": settings.tts_model,
-        "voice": "alloy",
+        "voice": settings.tts_openai_voice,
         "input": text,
         "response_format": "pcm",
     }
     try:
-        async with httpx.AsyncClient(timeout=60) as client:
+        async with httpx.AsyncClient(timeout=settings.llm_timeout_seconds) as client:
             resp = await client.post(url, headers=headers, json=payload)
             resp.raise_for_status()
             pcm = resp.content
@@ -90,13 +90,11 @@ async def _tts_openai(text: str) -> bytes:
 
 
 async def _mp3_to_pcm16(mp3: bytes, rate: int) -> bytes:
-    """Convert MP3 to PCM16 using ffmpeg if present; else return silence."""
-    import shutil
-    import subprocess
+    """Convert MP3 to PCM16 using ffmpeg."""
 
     if not shutil.which("ffmpeg"):
-        log.warning("ffmpeg not found; sending silence instead of voice")
-        return _silence(rate, 0.4)
+        log.warning("ffmpeg not found; TTS audio is unavailable")
+        return b""
 
     proc = await asyncio.create_subprocess_exec(
         "ffmpeg", "-hide_banner", "-loglevel", "error",
@@ -108,14 +106,31 @@ async def _mp3_to_pcm16(mp3: bytes, rate: int) -> bytes:
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    out, _err = await proc.communicate(mp3)
-    return out or _silence(rate, 0.3)
-
-
-def _silence(rate: int, seconds: float) -> bytes:
-    n = int(rate * seconds)
-    return b"\x00\x00" * n
+    try:
+        out, err = await proc.communicate(mp3)
+    except asyncio.CancelledError:
+        proc.kill()
+        await proc.wait()
+        raise
+    if not out:
+        log.warning("ffmpeg produced no PCM: %s", err.decode(errors="replace"))
+    return out
 
 
 def pcm_duration_ms(pcm: bytes, rate: int) -> int:
     return int(len(pcm) / 2 / rate * 1000)
+
+
+def capability() -> tuple[bool, str]:
+    """Report runtime readiness without claiming silent fallback is speech."""
+    if settings.tts_provider == "silent":
+        return False, "silent"
+    if settings.tts_provider == "openai":
+        return bool(settings.tts_api_key), "openai"
+    try:
+        import edge_tts  # noqa: F401
+    except ImportError:
+        return False, "edge-tts missing"
+    if not shutil.which("ffmpeg"):
+        return False, "ffmpeg missing"
+    return True, "edge"

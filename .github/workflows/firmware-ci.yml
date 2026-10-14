@@ -24,15 +24,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project:
-          - esp-csi-radar
-          - openpal
-          - glowlink
-          - airchat
-          - bassline
-          - bytepet
-          - deckpad
-          - openharmony-certification
+        include:
+          - project: esp-csi-radar
+            target: esp32
+          - project: openpal
+            target: esp32
+          - project: glowlink
+            target: esp32
+          - project: airchat
+            target: esp32
+          - project: bassline
+            target: esp32
+          - project: bytepet
+            target: esp32
+          - project: deckpad
+            target: esp32
+          - project: iceclock
+            target: esp32s3
+          - project: openharmony-certification
+            target: esp32
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -41,7 +51,7 @@ jobs:
         uses: espressif/esp-idf-ci-action@v1
         with:
           esp_idf_version: v5.5.1
-          target: esp32
+          target: ${{ matrix.target }}
           path: ${{ matrix.project }}/firmware
 
   openpal-server-tests:

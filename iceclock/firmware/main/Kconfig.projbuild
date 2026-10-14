@@ -1,0 +1,166 @@
+menu "IceClock Configuration"
+
+    menu "Network and time"
+        config ICECLOCK_WIFI_SSID
+            string "WiFi SSID (leave empty for offline mode)"
+            default ""
+
+        config ICECLOCK_WIFI_PASSWORD
+            string "WiFi password"
+            default ""
+
+        config ICECLOCK_NTP_SERVER
+            string "NTP server"
+            default "pool.ntp.org"
+
+        config ICECLOCK_TIMEZONE
+            string "POSIX timezone"
+            default "CST-8"
+            help
+                POSIX TZ string. CST-8 is UTC+8 without daylight saving.
+
+        config ICECLOCK_WIFI_CONNECT_TIMEOUT_SEC
+            int "Initial WiFi wait time (seconds)"
+            range 1 60
+            default 12
+    endmenu
+
+    menu "HUB75 panel"
+        config ICECLOCK_PANEL_WIDTH
+            int "Panel width"
+            range 32 128
+            default 64
+
+        choice ICECLOCK_PANEL_HEIGHT
+            prompt "Panel height / scan ratio"
+            default ICECLOCK_PANEL_HEIGHT_64
+
+            config ICECLOCK_PANEL_HEIGHT_32
+                bool "32 pixels (1/16 scan)"
+
+            config ICECLOCK_PANEL_HEIGHT_64
+                bool "64 pixels (1/32 scan)"
+        endchoice
+
+        config ICECLOCK_PANEL_HEIGHT_PIXELS
+            int
+            default 32 if ICECLOCK_PANEL_HEIGHT_32
+            default 64 if ICECLOCK_PANEL_HEIGHT_64
+
+        config ICECLOCK_COLOR_DEPTH
+            int "PWM color depth (bits per channel)"
+            range 1 5
+            default 4
+
+        config ICECLOCK_PWM_BASE_US
+            int "PWM least-significant plane time (microseconds)"
+            range 1 30
+            default 6
+
+        config ICECLOCK_DAY_BRIGHTNESS
+            int "Day brightness percent"
+            range 1 100
+            default 70
+
+        config ICECLOCK_NIGHT_BRIGHTNESS
+            int "Night brightness percent"
+            range 1 100
+            default 12
+
+        config ICECLOCK_NIGHT_START_HOUR
+            int "Night mode start hour"
+            range 0 23
+            default 22
+
+        config ICECLOCK_NIGHT_END_HOUR
+            int "Night mode end hour"
+            range 0 23
+            default 7
+
+        config ICECLOCK_PIN_R1
+            int "HUB75 R1 GPIO"
+            range 0 48
+            default 1
+        config ICECLOCK_PIN_G1
+            int "HUB75 G1 GPIO"
+            range 0 48
+            default 2
+        config ICECLOCK_PIN_B1
+            int "HUB75 B1 GPIO"
+            range 0 48
+            default 3
+        config ICECLOCK_PIN_R2
+            int "HUB75 R2 GPIO"
+            range 0 48
+            default 4
+        config ICECLOCK_PIN_G2
+            int "HUB75 G2 GPIO"
+            range 0 48
+            default 5
+        config ICECLOCK_PIN_B2
+            int "HUB75 B2 GPIO"
+            range 0 48
+            default 6
+        config ICECLOCK_PIN_A
+            int "HUB75 A GPIO"
+            range 0 48
+            default 7
+        config ICECLOCK_PIN_B
+            int "HUB75 B GPIO"
+            range 0 48
+            default 8
+        config ICECLOCK_PIN_C
+            int "HUB75 C GPIO"
+            range 0 48
+            default 9
+        config ICECLOCK_PIN_D
+            int "HUB75 D GPIO"
+            range 0 48
+            default 10
+        config ICECLOCK_PIN_E
+            int "HUB75 E GPIO (used by 64-pixel panels)"
+            range 0 48
+            default 11
+        config ICECLOCK_PIN_LAT
+            int "HUB75 LAT GPIO"
+            range 0 48
+            default 12
+        config ICECLOCK_PIN_OE
+            int "HUB75 OE GPIO"
+            range 0 48
+            default 13
+        config ICECLOCK_PIN_CLK
+            int "HUB75 CLK GPIO"
+            range 0 48
+            default 14
+    endmenu
+
+    menu "RTC and alerts"
+        config ICECLOCK_DS3231_ENABLE
+            bool "Use DS3231 as the offline RTC"
+            default y
+
+        config ICECLOCK_I2C_SDA_GPIO
+            int "DS3231 SDA GPIO"
+            depends on ICECLOCK_DS3231_ENABLE
+            range 0 48
+            default 15
+
+        config ICECLOCK_I2C_SCL_GPIO
+            int "DS3231 SCL GPIO"
+            depends on ICECLOCK_DS3231_ENABLE
+            range 0 48
+            default 16
+
+        config ICECLOCK_CHIME_ENABLE
+            bool "Enable hourly active-buzzer chime"
+            default n
+
+        config ICECLOCK_CHIME_GPIO
+            int "Active buzzer GPIO"
+            depends on ICECLOCK_CHIME_ENABLE
+            range 0 48
+            default 17
+    endmenu
+
+endmenu

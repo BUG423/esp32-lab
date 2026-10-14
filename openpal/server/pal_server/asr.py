@@ -9,6 +9,9 @@ Providers
 
 from __future__ import annotations
 
+import asyncio
+import array
+import importlib.util
 import io
 import logging
 import tempfile
@@ -20,6 +23,16 @@ import httpx
 from .config import settings
 
 log = logging.getLogger("pal.asr")
+
+
+def capability() -> tuple[bool, str]:
+    """Return configured runtime readiness and a short diagnostic."""
+    if settings.asr_provider == "disabled":
+        return False, "disabled"
+    if settings.asr_provider == "openai":
+        return bool(settings.asr_api_key), "openai" if settings.asr_api_key else "API key missing"
+    available = importlib.util.find_spec("faster_whisper") is not None
+    return available, "whisper_local" if available else "faster-whisper missing"
 
 
 def pcm16_to_wav(pcm: bytes, sample_rate: int, channels: int = 1) -> bytes:
@@ -40,7 +53,9 @@ async def transcribe(pcm: bytes, sample_rate: int) -> str:
         return ""
 
     if settings.asr_provider == "whisper_local":
-        return _transcribe_local(pcm, sample_rate)
+        # Model loading and inference are CPU/blocking work. Keep them off the
+        # FastAPI event loop so pings, interrupts, and other clients stay live.
+        return await asyncio.to_thread(_transcribe_local, pcm, sample_rate)
 
     return await _transcribe_openai(pcm, sample_rate)
 
@@ -53,7 +68,7 @@ async def _transcribe_openai(pcm: bytes, sample_rate: int) -> str:
         headers["Authorization"] = f"Bearer {settings.asr_api_key}"
 
     try:
-        async with httpx.AsyncClient(timeout=60) as client:
+        async with httpx.AsyncClient(timeout=settings.llm_timeout_seconds) as client:
             resp = await client.post(
                 url,
                 headers=headers,
@@ -89,3 +104,22 @@ def _transcribe_local(pcm: bytes, sample_rate: int) -> str:
         return " ".join(s.text.strip() for s in segments).strip()
     finally:
         path.unlink(missing_ok=True)
+
+
+def pcm16_metrics(pcm: bytes, sample_rate: int) -> tuple[int, float]:
+    """Return duration in milliseconds and normalized RMS for little-endian PCM16."""
+    if not pcm or sample_rate <= 0:
+        return 0, 0.0
+    usable = pcm[: len(pcm) & ~1]
+    samples = array.array("h")
+    samples.frombytes(usable)
+    if not samples:
+        return 0, 0.0
+    # ESP32 and browsers send little-endian PCM. byteswap on big-endian hosts.
+    import sys
+    if sys.byteorder != "little":
+        samples.byteswap()
+    square_sum = sum(int(sample) * int(sample) for sample in samples)
+    rms = (square_sum / len(samples)) ** 0.5 / 32768.0
+    duration_ms = int(len(samples) * 1000 / sample_rate)
+    return duration_ms, rms

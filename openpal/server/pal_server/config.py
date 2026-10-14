@@ -9,6 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -26,8 +27,9 @@ class Settings(BaseSettings):
     llm_base_url: str = "https://api.deepseek.com/v1"
     llm_api_key: str = ""                 # empty => toy-brain fallback (demo mode)
     llm_model: str = "deepseek-chat"
-    llm_temperature: float = 0.7
-    llm_max_tokens: int = 512
+    llm_temperature: float = Field(default=0.7, ge=0.0, le=2.0)
+    llm_max_tokens: int = Field(default=512, ge=32, le=4096)
+    llm_timeout_seconds: float = Field(default=60.0, ge=1.0, le=300.0)
 
     # ---- ASR ----
     asr_provider: Literal["openai", "whisper_local", "disabled"] = "disabled"
@@ -41,10 +43,11 @@ class Settings(BaseSettings):
     tts_base_url: str = "https://api.openai.com/v1"
     tts_api_key: str = ""
     tts_model: str = "tts-1"
+    tts_openai_voice: str = "alloy"
     tts_voice: str = "zh-CN-XiaoxiaoNeural"   # edge-tts voice
     tts_rate: str = "+0%"
     tts_volume: str = "+0%"
-    sample_rate_out: int = 24000
+    sample_rate_out: int = Field(default=24000, ge=8000, le=48000)
 
     # ---- personality ----
     persona_name: str = "小帕"
@@ -53,13 +56,16 @@ class Settings(BaseSettings):
         "回答简短自然，像朋友聊天，不要说教。"
         "偶尔用一点可爱的语气词，但不要过度。"
     )
-    history_turns: int = 12
+    history_turns: int = Field(default=12, ge=2, le=100)
 
     # ---- audio / device ----
-    sample_rate_in: int = 16000
-    vad_energy_threshold: float = 0.012
-    silence_ms: int = 700
-    max_utterance_ms: int = 15000
+    sample_rate_in: int = Field(default=16000, ge=8000, le=48000)
+    vad_energy_threshold: float = Field(default=0.012, ge=0.0, le=1.0)
+    min_utterance_ms: int = Field(default=250, ge=100, le=5000)
+    max_utterance_ms: int = Field(default=15000, ge=1000, le=120000)
+    audio_chunk_bytes: int = Field(default=4096, ge=512, le=32768)
+    max_clients: int = Field(default=16, ge=1, le=256)
+    expose_history: bool = False
 
     @property
     def llm_ready(self) -> bool:

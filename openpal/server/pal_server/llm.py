@@ -40,7 +40,7 @@ async def _chat_openai(messages: list[dict], system: str) -> str:
     }
 
     try:
-        async with httpx.AsyncClient(timeout=60) as client:
+        async with httpx.AsyncClient(timeout=settings.llm_timeout_seconds) as client:
             # first pass — maybe the model wants a tool
             resp = await client.post(url, headers=headers, json=payload)
             resp.raise_for_status()
@@ -142,6 +142,8 @@ def _render_tool_reply(name: str, result: dict) -> str:
             f"{result.get('desc')}，湿度 {result.get('humidity')}%。"
         )
     if name == "control_led":
+        if not result.get("ok"):
+            return "当前会话没有可控的灯。"
         return ("灯已经打开啦 💡" if result.get("led_on") else "灯关掉了 🌙") + f" 颜色 {result.get('color')}"
     if name == "remember":
         return f"记住啦：{result.get('saved')}（一共 {result.get('total')} 条）"

@@ -1,4 +1,4 @@
-"""Tool registry — OpenPal's lightweight MCP-style function calling.
+"""Tool registry — OpenPal's OpenAI-compatible function calling.
 
 Each tool exposes a JSON schema so OpenAI-compatible LLMs can call it via
 `tools=[...]`. The toy-brain fallback can also "call" a few tools by keyword
@@ -10,8 +10,12 @@ from __future__ import annotations
 import ast
 import datetime as dt
 import logging
+import math
 import operator
 import random
+from collections import defaultdict
+from contextlib import contextmanager
+from contextvars import ContextVar
 from typing import Any, Awaitable, Callable
 
 import httpx
@@ -22,7 +26,23 @@ log = logging.getLogger("pal.tools")
 # tool implementations
 # ---------------------------------------------------------------------------
 
-_NOTES: list[str] = []
+_CURRENT_SESSION: ContextVar[str] = ContextVar("openpal_session", default="global")
+_NOTES: dict[str, list[str]] = defaultdict(list)
+
+
+@contextmanager
+def session_scope(session_id: str):
+    """Bind tool state and UI events to one conversation session."""
+    token = _CURRENT_SESSION.set(session_id)
+    try:
+        yield
+    finally:
+        _CURRENT_SESSION.reset(token)
+
+
+def drop_session(session_id: str) -> None:
+    """Release volatile per-connection tool state after disconnect."""
+    _NOTES.pop(session_id, None)
 
 
 async def tool_get_time(args: dict) -> dict:
@@ -73,7 +93,7 @@ async def tool_get_weather(args: dict) -> dict:
 
 
 async def tool_control_led(args: dict) -> dict:
-    """Broadcast a LED command to connected devices (ESP32 / browser)."""
+    """Control only the device/browser attached to the calling session."""
     from . import main as main_mod
 
     color = str(args.get("color") or "#2ee6a8")
@@ -84,20 +104,24 @@ async def tool_control_led(args: dict) -> dict:
         "on": on,
         "color": color,
     }
-    await main_mod.broadcast(payload)
-    return {"ok": True, "led_on": on, "color": color}
+    delivered = await main_mod.send_to_session(_CURRENT_SESSION.get(), payload)
+    return {"ok": delivered, "led_on": on, "color": color}
 
 
 async def tool_remember(args: dict) -> dict:
     note = str(args.get("note") or "").strip()
     if not note:
         return {"ok": False, "error": "空笔记"}
-    _NOTES.append(note)
-    return {"ok": True, "saved": note, "total": len(_NOTES)}
+    notes = _NOTES[_CURRENT_SESSION.get()]
+    notes.append(note[:1000])
+    if len(notes) > 100:
+        del notes[:-100]
+    return {"ok": True, "saved": notes[-1], "total": len(notes)}
 
 
 async def tool_recall(args: dict) -> dict:
-    return {"notes": _NOTES[-10:], "total": len(_NOTES)}
+    notes = _NOTES[_CURRENT_SESSION.get()]
+    return {"notes": notes[-10:], "total": len(notes)}
 
 
 # safe arithmetic for the compute tool
@@ -111,22 +135,36 @@ _OPS = {
 }
 
 
-def _eval_node(node: ast.AST) -> float:
+def _checked(value: float | int) -> float | int:
+    if not math.isfinite(float(value)) or abs(value) > 1_000_000_000_000:
+        raise ValueError("result is too large")
+    return value
+
+
+def _eval_node(node: ast.AST) -> float | int:
     if isinstance(node, ast.Expression):
         return _eval_node(node.body)
     if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
-        return node.value
+        return _checked(node.value)
     if isinstance(node, ast.BinOp) and type(node.op) in _OPS:
-        return _OPS[type(node.op)](_eval_node(node.left), _eval_node(node.right))
+        left = _eval_node(node.left)
+        right = _eval_node(node.right)
+        if isinstance(node.op, ast.Pow) and (abs(left) > 1_000_000 or abs(right) > 10):
+            raise ValueError("power is too large")
+        return _checked(_OPS[type(node.op)](left, right))
     if isinstance(node, ast.UnaryOp) and type(node.op) in _OPS:
-        return _OPS[type(node.op)](_eval_node(node.operand))
+        return _checked(_OPS[type(node.op)](_eval_node(node.operand)))
     raise ValueError("unsupported expression")
 
 
 async def tool_compute(args: dict) -> dict:
     expr = str(args.get("expression") or "").strip()
     try:
+        if not expr or len(expr) > 128:
+            raise ValueError("expression is empty or too long")
         tree = ast.parse(expr, mode="eval")
+        if sum(1 for _ in ast.walk(tree)) > 64:
+            raise ValueError("expression is too complex")
         value = _eval_node(tree)
         return {"expression": expr, "result": value}
     except Exception as e:
@@ -264,10 +302,10 @@ async def call_tool(name: str, arguments: dict) -> dict:
         log.exception("tool %s failed", name)
         result = {"error": str(e)}
 
-    # notify all clients so the dashboard can show tool activity
+    # Tool diagnostics belong to the caller; arguments/results may be private.
     try:
         from . import main as main_mod
-        await main_mod.broadcast({
+        await main_mod.send_to_session(_CURRENT_SESSION.get(), {
             "type": "tool",
             "name": name,
             "args": arguments or {},
@@ -287,9 +325,9 @@ async def toy_try_tool(user_text: str) -> dict | None:
     low = user_text.lower()
 
     if any(k in low for k in ("几点", "时间", "日期", "星期", "礼拜", "what time", "today", "weekday")):
-        return {"tool": "get_time", "result": await tool_get_time({})}
+        return {"tool": "get_time", "result": await call_tool("get_time", {})}
     if any(k in low for k in ("笑话", "joke", "讲个")):
-        return {"tool": "get_joke", "result": await tool_get_joke({})}
+        return {"tool": "get_joke", "result": await call_tool("get_joke", {})}
     if any(k in low for k in ("天气", "weather", "气温")):
         # crude city extraction
         city = "Beijing"
@@ -297,16 +335,17 @@ async def toy_try_tool(user_text: str) -> dict | None:
             if c.lower() in low or c in user_text:
                 city = c
                 break
-        return {"tool": "get_weather", "result": await tool_get_weather({"city": city})}
+        return {"tool": "get_weather", "result": await call_tool("get_weather", {"city": city})}
     if any(k in low for k in ("开灯", "关灯", "灯", "led", "light")):
         on = "关" not in user_text and "off" not in low
-        return {"tool": "control_led", "result": await tool_control_led({"on": on, "color": "#2ee6a8"})}
+        args = {"on": on, "color": "#2ee6a8"}
+        return {"tool": "control_led", "result": await call_tool("control_led", args)}
     if "记住" in user_text or "remember" in low:
         note = user_text.replace("记住", "").replace("remember", "").strip(" ：:，,")
         if note:
-            return {"tool": "remember", "result": await tool_remember({"note": note})}
+            return {"tool": "remember", "result": await call_tool("remember", {"note": note})}
     if any(k in low for k in ("记了什么", "笔记", "recall", "notes")):
-        return {"tool": "recall", "result": await tool_recall({})}
+        return {"tool": "recall", "result": await call_tool("recall", {})}
 
     # simple arithmetic like "2+3*4" or "算一下 12*13"
     expr = user_text
@@ -317,6 +356,6 @@ async def toy_try_tool(user_text: str) -> dict | None:
         import re
         m = re.fullmatch(r"[\d\s+\-*/().]+", expr)
         if m:
-            return {"tool": "compute", "result": await tool_compute({"expression": expr})}
+            return {"tool": "compute", "result": await call_tool("compute", {"expression": expr})}
 
     return None

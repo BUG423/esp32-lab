@@ -1,89 +1,31 @@
-# OpenPal vs 小智 (xiaozhi-esp32)
+# OpenPal 与 xiaozhi-esp32
 
-> 两个项目都值得用。这篇文档说明**取舍差异**，不是拉踩。
-
-## 一句话
-
-| | 定位 |
-|---|---|
-| **xiaozhi-esp32** | 产品化的开源 AI 语音助手，开箱即用，生态巨大（30k+ star） |
-| **OpenPal** | 可拆解、可自托管的 AI 语音**搭子**，强调本地优先 + 情绪交互 |
-
-## 详细对比
+这是一份取舍说明，不是优劣榜。对 xiaozhi-esp32 的描述以其官方仓库和协议文档为准：
+[项目说明](https://github.com/78/xiaozhi-esp32)、
+[WebSocket 协议](https://github.com/78/xiaozhi-esp32/blob/main/docs/websocket.md)、
+[MQTT+UDP 协议](https://github.com/78/xiaozhi-esp32/blob/main/docs/mqtt-udp.md)、
+[MCP 用法](https://github.com/78/xiaozhi-esp32/blob/main/docs/mcp-usage.md)。
 
 | 维度 | xiaozhi-esp32 | OpenPal |
 |---|---|---|
-| **GitHub 热度** | ~30.5k ⭐ | 新项目 |
-| **默认服务端** | xiaozhi.me 官方云 | **自托管 Python server** |
-| **离线能力** | 唤醒词离线，对话需联网 | LLM/ASR/TTS **均可本地**（Ollama/whisper/piper） |
-| **LLM 接入** | Qwen / DeepSeek 等 | 任意 **OpenAI 兼容** API（含 Ollama） |
-| **语音协议** | WebSocket / MQTT+UDP，Opus | WebSocket，JSON + PCM16（v1） |
-| **唤醒词** | ✅ ESP-SR，可定制 | 🔜 路线图（PTT 先行） |
-| **情绪/人格** | 表情贴图 | **连续情绪模型** + LED + TTS 语速 |
-| **无硬件体验** | 需板子 + 配网 | **浏览器麦克风直接玩** |
-| **MCP** | ✅ 设备端 + 云端 MCP | 🔜 路线图（简单工具调用） |
-| **屏幕表情** | ✅ OLED/LCD emoji | 🔜（先做 LED 灯环） |
-| **硬件矩阵** | 138+ 板型 | 通用 ESP32 + I2S 麦/喇叭 |
-| **ESP-IDF** | **v6.0.1+**（5.x 不支持） | **v5.5** 即可 |
-| **协议文档** | 有，较复杂 | 极简，本文档即协议 |
-| **代码规模** | 大而全 | 小而清晰，适合二次开发 |
+| 目标 | 产品化语音助手与广泛硬件生态 | 小型、可读、便于自托管改造的参考实现 |
+| 传输 | WebSocket 或 MQTT+UDP，Opus 流 | 单 WebSocket，PCM16LE 二进制流 |
+| 带宽 | Opus 更省带宽 | 实现直观，但 PCM 带宽较高 |
+| 唤醒/交互 | 支持离线唤醒等完整交互 | 当前只有 PTT，唤醒词在路线图 |
+| 硬件 | 官方仓库维护大量开发板配置 | 当前持续验证经典 ESP32 + 通用 I2S 麦/功放 |
+| 服务端 | 可接官方服务，也有社区服务实现 | 仓库自带 FastAPI 服务，默认自行托管 |
+| 无硬件调试 | 重点在设备端 | 浏览器与真机共用协议，可直接调试 |
+| 情绪 | 支持表情/显示等能力 | 文本规则 + 连续 valence/arousal，影响提示词、LED、语速 |
+| MCP | 官方实现标准化 MCP 设备能力交互 | 当前只是 OpenAI function calling，不能称为 MCP |
+| 成熟度 | 社区大、能力完整 | 代码量小，但功能、板级验证和运维能力有限 |
 
-## 什么时候选谁
+## 怎么选
 
-**选小智，如果你想：**
-- 马上要一个能用的成品
-- 需要大量现成板型支持
-- 用 MCP 控制智能家居/电脑
-- 跟随大社区
+适合 xiaozhi-esp32 的情况：需要成熟成品体验、离线唤醒、Opus、屏幕 UI、广泛板型或
+既有社区服务生态。
 
-**选 OpenPal，如果你想：**
-- 数据不出门 / 纯局域网
-- 自己改 LLM / TTS / 人格逻辑
-- 先在浏览器验证想法再上硬件
-- 把「情绪化 AI 伙伴」做成自己的产品/作品
-- 用 ESP-IDF 5.5，不想立刻升 6.x
+适合 OpenPal 的情况：需要读懂整条链路、快速改服务端、在局域网自行部署、先用浏览器
+验证交互，或者希望用一个尽量小的协议和固件作为实验底座。
 
-## 协议层差异
-
-### 小智
-- 设备 ↔ 服务器自有协议（WebSocket / MQTT+UDP）
-- Opus 音频流，双向实时
-- 后端可替换（社区有 Python/Java/Go 实现）
-
-### OpenPal
-- 单一 WebSocket `/ws`
-- 文本帧 JSON 控制 + 二进制帧 PCM16
-- 音频回复 base64 内嵌在 JSON（v1 简化；v2 改二进制 + Opus）
-
-```json
-// OpenPal 回复
-{
-  "type": "reply",
-  "text": "你好呀！",
-  "emotion": {"emotion":"happy","valence":0.9,"arousal":0.7,"color":"#2ee6a8","emoji":"😄"},
-  "audio_b64": "<pcm16 base64>",
-  "sample_rate": 24000
-}
-```
-
-## 情绪引擎对比
-
-| | 小智 | OpenPal |
-|---|---|---|
-| 情绪来源 | 预置表情资源 | 用户话语实时打分 |
-| 状态 | 离散表情 ID | 连续 (valence, arousal) |
-| 影响范围 | 屏幕贴图 | 提示词 + TTS 语速 + LED 色 |
-| 可解释性 | 美术资源 | 同一状态机可导出 JSON |
-
-## 可以一起用
-
-有意思的是两者**不互斥**：
-
-- 用小智的设备端 + 自建后端（社区 server 已有）
-- 用 OpenPal 的情绪引擎作为独立服务，给任何语音助手加「性格」
-- 把 OpenPal 协议做成小智的 MCP tool provider
-
----
-
-**结论：** 小智是这个赛道的「安卓」——生态成熟；OpenPal 想做「可刷机的开源固件」——自由度高。
-先玩小智建立直觉，再用 OpenPal 改出你自己的版本。
+两者也可以互相借鉴，但协议并不兼容，不能把 OpenPal 的函数工具描述成 xiaozhi 的 MCP，
+也不能把 OpenPal 当前的 PTT/PCM 实现描述成与 xiaozhi 的实时 Opus 链路等价。

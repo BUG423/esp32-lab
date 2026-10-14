@@ -1,131 +1,93 @@
-# 🤝 OpenPal
+# OpenPal
 
-**开源 · 本地优先的 AI 语音搭子 —— 可自托管的「小智」替代方案。**
+[![ESP-IDF 5.5](https://img.shields.io/badge/ESP--IDF-5.5-E7352C)](https://docs.espressif.com/projects/esp-idf/)
+[![Protocol v2](https://img.shields.io/badge/Voice_Protocol-v2-22D3EE)](./docs/architecture.md)
+[![FastAPI](https://img.shields.io/badge/Server-FastAPI-009688)](./server)
+[![Tests](https://img.shields.io/badge/tests-21_passed-22C55E)](./server/tests)
 
-XiaoZhi 火了，但它绑定了官方云、上手链路长。OpenPal 把同一套体验拆开、做透明，
-并且加上小智没有的三件事：**完全本地可跑、情绪引擎、浏览器即设备**。
+OpenPal is a small, self-hosted AI voice terminal. A browser or ESP32 streams
+audio to a Python server that connects ASR, an LLM, function tools, and TTS.
+It favors readable code, LAN deployment, and explicit capability reporting.
+It is not a fork of xiaozhi-esp32.
 
+[中文](./README_zh.md) · [Architecture and protocol](./docs/architecture.md) · [XiaoZhi comparison](./docs/compare-xiaozhi.md)
+
+![OpenPal live conversation, mood, and service readiness](../docs/images/openpal-preview.svg)
+
+## System at a glance
+
+```mermaid
+flowchart LR
+    subgraph CLIENTS[Interaction clients]
+        WEB[Browser<br/>record / captions / playback]
+        ESP[ESP32<br/>PTT / LED / I2S]
+    end
+
+    subgraph SERVER[OpenPal Server]
+        WS[WebSocket v2<br/>control + PCM chunks]
+        SESSION[Isolated session<br/>history / mood / cancellation]
+        ASR[ASR]
+        LLM[LLM + function tools]
+        TTS[TTS]
+    end
+
+    WEB <--> WS
+    ESP <--> WS
+    WS --> SESSION
+    SESSION --> ASR --> LLM --> TTS
+    TTS --> WS
+    LLM -. text and state .-> WS
+
+    classDef edge fill:#082f49,stroke:#22d3ee,color:#ecfeff;
+    classDef core fill:#172554,stroke:#818cf8,color:#eef2ff;
+    class WEB,ESP edge;
+    class WS,SESSION,ASR,LLM,TTS core;
 ```
- 🎙️ 你说话  ──►  OpenPal Server  ──►  🔊 有情绪的语音回复
-                  ASR → LLM → TTS
-                  + 人格 / 情绪引擎
-```
 
-[中文文档](./README_zh.md) · [架构](./docs/architecture.md) · [与小智对比](./docs/compare-xiaozhi.md)
+| I/O | Session experience | Current boundary |
+|:---|:---|:---|
+| ✅ Browser and ESP32 clients | ✅ Context isolated per connection | 🧭 Wake word / device VAD |
+| ✅ Bidirectional PCM16 streaming | ✅ Inference, synthesis, and playback can be interrupted | 🧭 Opus / jitter buffer |
+| ✅ Honest provider readiness | ✅ Mood drives replies and LED state | 🧭 Authentication / OTA / durable memory |
 
----
+## What works
 
-## ✨ 为什么是 OpenPal
+- Text chat with a zero-key `toy-brain` demo.
+- Browser recording when ASR is configured; text still works when it is not.
+- Streamed ESP32 push-to-talk input and streamed PCM playback.
+- Per-connection history, mood, and cancellable turns—no conversation broadcast.
+- A small valence/arousal personality model and OpenAI-compatible function calls.
 
-| | 小智 xiaozhi-esp32 | **OpenPal** |
-|---|---|---|
-| 服务端 | 官方云（xiaozhi.me）为主 | **完全自托管**，本地 LLM/TTS 可选 |
-| 上手 | ESP-IDF 6.x + 复杂配置 | ESP-IDF 5.5 + 浏览器 5 分钟体验 |
-| 情绪 | 表情贴图 | **连续情绪模型**（valence/arousal）+ LED + 语气 |
-| 无硬件体验 | 需要板子 | **浏览器麦克风直接玩** |
-| LLM | 主要对接国内大模型 | 任意 OpenAI 兼容 API / Ollama / DeepSeek / Qwen |
-| 协议 | 自有 WebSocket/MQTT 协议 | 极简 JSON + PCM WebSocket，文档全公开 |
-| 隐私 | 依赖云端 | **语音可不出局域网** |
+Wake words, Opus, authentication, OTA, durable memory, and the MCP protocol are
+not implemented yet. Do not expose the current server directly to the public Internet.
 
----
-
-## 🚀 5 分钟跑起来（不用买硬件）
-
-### 1. 启动服务端
+## Browser quick start
 
 ```bash
 cd server
-python3 -m venv .venv && source .venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-
-# 可选：配置 LLM（不配也能用 toy-brain demo）
-export PAL_LLM_API_KEY=sk-...
-export PAL_LLM_BASE_URL=https://api.deepseek.com/v1   # 或 Ollama / 任意兼容端
-
+cp .env.example .env
 python -m pal_server.main
 ```
 
-### 2. 打开控制台
+Open <http://localhost:8080>. With the default `PAL_ASR_PROVIDER=disabled`, the
+microphone button is disabled honestly; typing still exercises the complete
+session, LLM demo, mood, and tool path.
 
-```
-http://localhost:8080
-```
-
-- 直接打字聊天
-- 点 **🎙️ 按住说话** —— 浏览器麦克风 → ASR → LLM → TTS 语音闭环
-- 右侧实时看**情绪引擎**（愉悦度 / 唤醒度 / LED 色）
-
-> 没配 API Key 也能跑：会进入 `toy-brain demo` 模式，有基础对话 + edge-tts 语音。
-
----
-
-## 🧰 硬件（可选，真机形态）
-
-| 部件 | 型号 | 价格 |
-|---|---|---|
-| 主控 | ESP32 / ESP32-S3 DevKit | ¥15–30 |
-| 麦克风 | INMP441 I2S | ¥8 |
-| 功放喇叭 | MAX98357A + 小喇叭 | ¥10 |
-| 按键 | 轻触开关（PTT） | ¥1 |
-| （可选）LED 灯环 | WS2812 | ¥10 |
-
-总 BOM **< ¥50**。
-
-### 烧录固件
+For voice input, configure an OpenAI-compatible Whisper endpoint:
 
 ```bash
-cd firmware
-idf.py set-target esp32      # 或 esp32s3
-idf.py menuconfig            # 配 WiFi + 服务器地址 ws://<PC-IP>:8080/ws
-idf.py build flash monitor
+export PAL_ASR_PROVIDER=openai
+export PAL_ASR_API_KEY=sk-...
 ```
 
-**按住 PTT 说话 → 松开 → 自动识别并语音回复。**
+Or set `PAL_ASR_PROVIDER=whisper_local` and install `faster-whisper`. Default
+Edge TTS also needs Internet access, the `edge-tts` package, and `ffmpeg`.
+`/api/status` and the dashboard report actual provider readiness.
 
----
-
-## 🧠 情绪引擎（OpenPal 独有）
-
-不只是「换个表情包」——是一套连续情绪状态机：
-
-```
-用户话语 ──► 情绪打分 ──► EMA 平滑 ──► (valence, arousal)
-                                │
-                ┌───────────────┼───────────────┐
-                ▼               ▼               ▼
-           系统提示词       LED 颜色         TTS 语速
-           （语气变化）    （设备灯环）     （快/慢/轻柔）
-```
-
-- 开心 → 语速加快、灯变绿
-- 难过 → 语气温柔、灯变蓝紫
-- 兴奋 → 能量感强、灯变黄
-
-点控制台的**光球**可随时重置情绪。
-
----
-
-## 📁 目录
-
-```
-openpal/
-├── server/                 Python 服务端
-│   ├── pal_server/
-│   │   ├── main.py         FastAPI + WebSocket 主循环
-│   │   ├── personality.py  情绪/人格引擎
-│   │   ├── asr.py          Whisper 兼容 ASR
-│   │   ├── llm.py          OpenAI 兼容 LLM + toy-brain
-│   │   └── tts.py          edge-tts / OpenAI TTS
-│   └── static/index.html   控制台 + 浏览器语音模式
-├── firmware/               ESP-IDF 固件（I2S + WS + PTT）
-└── docs/
-    ├── architecture.md
-    └── compare-xiaozhi.md
-```
-
----
-
-## 🔌 接入任意 LLM
+## LLM configuration
 
 ```bash
 # DeepSeek
@@ -133,42 +95,85 @@ export PAL_LLM_BASE_URL=https://api.deepseek.com/v1
 export PAL_LLM_API_KEY=sk-xxx
 export PAL_LLM_MODEL=deepseek-chat
 
-# 本地 Ollama
+# Local Ollama
 export PAL_LLM_BASE_URL=http://127.0.0.1:11434/v1
 export PAL_LLM_API_KEY=ollama
 export PAL_LLM_MODEL=qwen2.5:7b
-
-# Qwen / OpenAI / 任意兼容端
-export PAL_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 ```
 
----
+The endpoint must support OpenAI Chat Completions. Function calling is used
+for time, weather, jokes, arithmetic, volatile notes, and LED commands. This
+tool registry is not an MCP implementation.
 
-## 🗺️ 路线图
+## ESP32 hardware
 
-- [x] 浏览器语音闭环（无需硬件）
-- [x] 情绪引擎（valence/arousal + LED + TTS rate）
-- [x] ESP32 PTT 对讲固件
-- [x] 本地/云端 LLM 热切换
-- [ ] 唤醒词（ESP-SR / OpenWakeWord）
-- [ ] Opus 编解码，降低带宽
-- [ ] MCP 工具调用（智能家居 / PC 控制）
-- [ ] 多模态：摄像头表情 / 屏幕 emoji
-- [ ] OTA 升级
-- [ ] Home Assistant 集成
+The continuously built target is classic ESP32 with ESP-IDF 5.5. Defaults are
+configurable under `OpenPal Configuration` in `idf.py menuconfig`.
 
----
+| Module | Signal | Default GPIO |
+|---|---|---:|
+| INMP441 | BCLK / WS / SD | 14 / 15 / 32 |
+| INMP441 | L/R | GND (left channel) |
+| MAX98357A | BCLK / LRC / DIN | 26 / 25 / 22 |
+| PTT button | GPIO to GND | 4 |
+| Status LED | output | 2 |
 
-## 🤝 和小智的关系
+All modules must share ground. The microphone uses I2S1 RX with 32-bit slots
+at 16 kHz; the amplifier uses independent I2S0 TX and follows each reply's
+declared PCM16 sample rate.
 
-OpenPal **不是** fork，也不是替代品的替代品——是同一赛道的**另一种取舍**：
+```bash
+cd firmware
+idf.py set-target esp32
+idf.py menuconfig       # Wi-Fi, ws://<server-LAN-IP>:8080/ws, and pins
+idf.py build
+idf.py flash monitor
+```
 
-- 小智：产品化程度高、生态大、开箱即用（用官方云）
-- OpenPal：**可拆解、可自托管、可改造**，适合想搞懂每一层、或要求数据不出门的人
+Hold PTT to talk and release to transcribe. Pressing PTT during inference,
+synthesis, or playback interrupts the old turn. The default utterance limit is
+15 seconds on both device and server.
 
-两个都值得 star。想直接上手成品，去玩小智；想自己长出一个属于自己的 AI 搭子，来 OpenPal。
+## Protocol v2
 
----
+JSON text frames carry control messages. Binary frames carry mono PCM16LE,
+normally 16 kHz upstream and 24 kHz downstream. A reply is framed by
+`reply_start`, binary chunks, and `reply_end`; it is never embedded as a large
+Base64 JSON value. See [architecture.md](./docs/architecture.md).
+
+PCM is deliberately easy to inspect, but costs about 256 kbit/s at 16 kHz.
+Opus and a jitter buffer remain roadmap work.
+
+```mermaid
+sequenceDiagram
+    participant C as Browser / ESP32
+    participant S as OpenPal Server
+    participant A as ASR
+    participant L as LLM + tools
+    participant T as TTS
+
+    C->>S: audio_start + PCM16 chunks
+    C->>S: audio_end
+    S->>A: complete utterance
+    A-->>S: transcript
+    S->>L: session context + mood
+    L-->>S: reply / function call
+    S->>T: reply text
+    S-->>C: reply_start
+    loop Streaming playback
+        T-->>S: PCM16 chunk
+        S-->>C: binary audio frame
+    end
+    S-->>C: reply_end
+    Note over C,S: A new PTT turn sends interrupt and cancels stale work/playback
+```
+
+## Verification
+
+```bash
+cd server && pytest -q
+cd ../firmware && idf.py build
+```
 
 ## License
 

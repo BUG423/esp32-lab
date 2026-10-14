@@ -17,6 +17,7 @@ static const char *TAG = "wifi";
 
 static EventGroupHandle_t s_events;
 static char s_ip[16];
+static int s_retry;
 
 #define CONNECTED_BIT BIT0
 #define FAIL_BIT      BIT1
@@ -27,17 +28,21 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data)
     if (base == WIFI_EVENT && id == WIFI_EVENT_STA_START) {
         esp_wifi_connect();
     } else if (base == WIFI_EVENT && id == WIFI_EVENT_STA_DISCONNECTED) {
-        static int retry = 0;
-        if (retry < MAX_RETRY) {
-            esp_wifi_connect();
-            retry++;
-        } else {
+        xEventGroupClearBits(s_events, CONNECTED_BIT);
+        s_ip[0] = '\0';
+        s_retry++;
+        if (s_retry == MAX_RETRY) {
             xEventGroupSetBits(s_events, FAIL_BIT);
         }
+        /* Keep retrying after startup as well; transient AP loss should not
+         * require a power cycle. */
+        esp_wifi_connect();
     } else if (base == IP_EVENT && id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t *e = (ip_event_got_ip_t *)data;
         snprintf(s_ip, sizeof(s_ip), IPSTR, IP2STR(&e->ip_info.ip));
+        s_retry = 0;
         ESP_LOGI(TAG, "got IP %s", s_ip);
+        xEventGroupClearBits(s_events, FAIL_BIT);
         xEventGroupSetBits(s_events, CONNECTED_BIT);
     }
 }
@@ -55,9 +60,11 @@ esp_err_t wifi_manager_start(void)
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &on_event, NULL));
 
     wifi_config_t cfg = { 0 };
-    strncpy((char *)cfg.sta.ssid, CONFIG_OPENPAL_WIFI_SSID, sizeof(cfg.sta.ssid));
-    strncpy((char *)cfg.sta.password, CONFIG_OPENPAL_WIFI_PASSWORD, sizeof(cfg.sta.password));
-    cfg.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
+    strlcpy((char *)cfg.sta.ssid, CONFIG_OPENPAL_WIFI_SSID, sizeof(cfg.sta.ssid));
+    strlcpy((char *)cfg.sta.password, CONFIG_OPENPAL_WIFI_PASSWORD, sizeof(cfg.sta.password));
+    cfg.sta.threshold.authmode = strlen(CONFIG_OPENPAL_WIFI_PASSWORD)
+                                      ? WIFI_AUTH_WPA2_PSK
+                                      : WIFI_AUTH_OPEN;
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg));

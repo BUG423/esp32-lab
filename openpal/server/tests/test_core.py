@@ -3,8 +3,13 @@
 from __future__ import annotations
 
 import asyncio
+import json
 
-from pal_server import llm, tools
+from fastapi.testclient import TestClient
+
+from pal_server import asr, llm, tools
+from pal_server import main as main_mod
+from pal_server.main import ClientSession, run_turn
 from pal_server.personality import PersonalityEngine
 
 
@@ -41,6 +46,93 @@ def test_tts_hints_rate_is_string():
     assert isinstance(h["rate"], str) and h["rate"].endswith("%")
 
 
+def test_activity_does_not_overwrite_mood():
+    p = PersonalityEngine("小帕", "x")
+    p.observe_user("今天太开心了")
+    p.set_state("thinking")
+    assert p.mood.emotion == "happy"
+    assert p.device_payload()["activity"] == "thinking"
+
+
+def test_personality_reset_is_complete():
+    p = PersonalityEngine("小帕", "x")
+    p.observe_user("太棒了！")
+    p.set_state("speaking")
+    p.reset()
+    assert p.mood.emotion == "neutral"
+    assert p.mood.valence == 0.5
+    assert p.activity_state == "idle"
+    assert p.turn_count == 0
+
+
+# ---------------------------------------------------------------------------
+# audio validation / session isolation
+# ---------------------------------------------------------------------------
+
+def test_pcm16_metrics_silence_and_duration():
+    duration, rms = asr.pcm16_metrics(b"\x00\x00" * 16000, 16000)
+    assert duration == 1000
+    assert rms == 0.0
+
+
+def test_pcm16_metrics_signal():
+    sample = (16384).to_bytes(2, "little", signed=True)
+    duration, rms = asr.pcm16_metrics(sample * 8000, 16000)
+    assert duration == 500
+    assert 0.49 < rms < 0.51
+
+
+def test_sessions_keep_separate_history(monkeypatch):
+    async def fake_chat(messages, system):
+        return f"echo:{messages[-1]['content']}"
+
+    monkeypatch.setattr(llm, "chat", fake_chat)
+    left = ClientSession(session_id="left")
+    right = ClientSession(session_id="right")
+    run(run_turn(left, "苹果", synthesize_audio=False))
+    run(run_turn(right, "香蕉", synthesize_audio=False))
+
+    assert [item["content"] for item in left.conversation] == ["苹果", "echo:苹果"]
+    assert [item["content"] for item in right.conversation] == ["香蕉", "echo:香蕉"]
+
+
+def test_websocket_v2_streams_binary_reply(monkeypatch):
+    async def fake_chat(messages, system):
+        return "测试回复"
+
+    async def fake_tts(text, rate=None):
+        return b"\x01\x00" * 32
+
+    monkeypatch.setattr(main_mod.llm, "chat", fake_chat)
+    monkeypatch.setattr(main_mod.tts, "synthesize", fake_tts)
+
+    with TestClient(main_mod.app).websocket_connect("/ws") as websocket:
+        hello = websocket.receive_json()
+        initial = websocket.receive_json()
+        assert hello["protocol"] == 2
+        assert initial["state"] == "listening"
+
+        websocket.send_json({"type": "text", "text": "测试"})
+        controls = []
+        binary = b""
+        while not any(item.get("type") == "reply_end" for item in controls):
+            message = websocket.receive()
+            if message.get("bytes") is not None:
+                binary += message["bytes"]
+            elif message.get("text"):
+                controls.append(json.loads(message["text"]))
+
+        start = next(item for item in controls if item.get("type") == "reply_start")
+        assert start["audio_format"] == "pcm_s16le"
+        assert start["audio_bytes"] == len(binary) == 64
+        assert "audio_b64" not in start
+
+
+def test_history_endpoint_is_private_by_default():
+    response = TestClient(main_mod.app).get("/api/history")
+    assert response.status_code == 403
+
+
 # ---------------------------------------------------------------------------
 # tools
 # ---------------------------------------------------------------------------
@@ -65,10 +157,23 @@ def test_tool_compute_rejects_unsafe():
     assert "error" in r
 
 
+def test_tool_compute_rejects_resource_abuse():
+    r = run(tools.call_tool("compute", {"expression": "9**999999999"}))
+    assert "error" in r
+
+
 def test_tool_remember_recall():
     run(tools.call_tool("remember", {"note": "买牛奶"}))
     r = run(tools.call_tool("recall", {}))
     assert "买牛奶" in r["notes"]
+
+
+def test_notes_are_isolated_by_session():
+    with tools.session_scope("session-a"):
+        run(tools.call_tool("remember", {"note": "A 的秘密"}))
+    with tools.session_scope("session-b"):
+        result = run(tools.call_tool("recall", {}))
+    assert "A 的秘密" not in result["notes"]
 
 
 def test_toy_try_tool_time():

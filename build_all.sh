@@ -6,15 +6,13 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TARGET_CHIP="${IDF_TARGET:-esp32}"
-
 show_help() {
   cat << 'EOF'
 用法 / Usage:
   ./build_all.sh [选项 / options] [项目名 / project_names...]
 
 示例 / Examples:
-  ./build_all.sh                     # 编译全部 8 个实验固件 / Build all 8 firmwares
+  ./build_all.sh                     # 编译全部 9 个实验固件 / Build all 9 firmwares
   ./build_all.sh esp-csi-radar       # 仅编译 esp-csi-radar / Build specific project
   ./build_all.sh openpal glowlink    # 编译指定的多个项目 / Build specified projects
   ./build_all.sh --clean             # 清理所有编译产物并重新编译 / Clean & rebuild
@@ -27,6 +25,7 @@ show_help() {
   - bassline                  音频频谱 WS2812 律动灯 (Audio FFT Visualizer)
   - bytepet                   桌面电子宠物 (Desktop Virtual Pet)
   - deckpad                   BLE 蓝牙宏键盘 (BLE HID Macro Deck)
+  - iceclock                  HUB75 冰晶像素时钟 (HUB75 Pixel Clock, ESP32-S3)
   - openharmony-certification 开源鸿蒙轻量系统认证固件 (OpenHarmony Mini System)
 EOF
 }
@@ -82,7 +81,7 @@ for arg in "$@"; do
   esac
 done
 
-ALL_PROJECTS=(esp-csi-radar openpal glowlink airchat bassline bytepet deckpad openharmony-certification)
+ALL_PROJECTS=(esp-csi-radar openpal glowlink airchat bassline bytepet deckpad iceclock openharmony-certification)
 
 if [[ ${#TARGET_PROJECTS[@]} -eq 0 ]]; then
   PROJECTS_TO_BUILD=("${ALL_PROJECTS[@]}")
@@ -94,7 +93,7 @@ setup_idf
 
 echo "=================================================================="
 echo "🚀 ESP32-内部 固件批量构建任务开始"
-echo "目标芯片架构: ${TARGET_CHIP}"
+echo "目标芯片架构: ${IDF_TARGET:-按项目自动选择}"
 echo "待编译项目: ${PROJECTS_TO_BUILD[*]}"
 echo "=================================================================="
 
@@ -113,6 +112,14 @@ for p in "${PROJECTS_TO_BUILD[@]}"; do
   echo "------------------------------------------------------------------"
   echo "🔨 正在编译: [${p}]"
   echo "路径: ${fw_dir}"
+  if [[ -n "${IDF_TARGET:-}" ]]; then
+    project_target="${IDF_TARGET}"
+  elif [[ "${p}" == "iceclock" ]]; then
+    project_target="esp32s3"
+  else
+    project_target="esp32"
+  fi
+  echo "芯片: ${project_target}"
   echo "------------------------------------------------------------------"
 
   if [[ ${CLEAN_BUILD} -eq 1 ]]; then
@@ -121,7 +128,7 @@ for p in "${PROJECTS_TO_BUILD[@]}"; do
   fi
 
   build_start=$(date +%s)
-  if (cd "${fw_dir}" && { [[ -f "sdkconfig" ]] || idf.py set-target "${TARGET_CHIP}"; } && idf.py build); then
+  if (cd "${fw_dir}" && { [[ -f "sdkconfig" ]] || idf.py set-target "${project_target}"; } && idf.py build); then
     build_end=$(date +%s)
     duration=$((build_end - build_start))
 
